@@ -6,7 +6,7 @@
 <title>Atlas HRS — My ESS</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 13px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; min-height: 100vh; display: flex; flex-direction: column; font-size: 13px; }
 .demo-bar { background: #1a1a1a; padding: 5px 20px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
 .demo-btn { font-size: 11px; padding: 3px 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: transparent; color: white; cursor: pointer; }
 .demo-btn.on { background: white; color: #1a1a1a; font-weight: 700; }
@@ -18,7 +18,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .brand-sub { font-size: 9px; color: #bbb; letter-spacing: 0.1em; text-transform: uppercase; }
 .logo-right { display: flex; align-items: center; gap: 14px; }
 .user-circle { width: 30px; height: 30px; border-radius: 50%; color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.shell { display: flex; flex: 1; overflow: hidden; }
+.shell { display: flex; flex: 1; min-height: calc(100vh - 90px); }
 .sidebar { width: 200px; background: white; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
 .sidebar-label { padding: 14px 18px 5px; font-size: 10px; font-weight: 700; color: #c0392b; letter-spacing: 0.06em; text-transform: uppercase; }
 .s-item { display: flex; align-items: center; gap: 10px; padding: 8px 18px; color: #555; cursor: pointer; border-left: 3px solid transparent; }
@@ -26,7 +26,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .s-item.active { background: #fdecea; color: #c0392b; font-weight: 600; border-left-color: #c0392b; }
 .s-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
 .s-bottom { margin-top: auto; border-top: 1px solid #f0f0f0; }
-.main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-height: 0; }
+.main { flex: 1; display: flex; flex-direction: column; }
 .tab-nav { background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 20px; flex-shrink: 0; overflow-x: auto; overflow-y: visible; }
 .tab-nav::-webkit-scrollbar { height: 0; }
 .t { font-size: 13px; padding: 11px 16px; color: #777; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; margin-bottom: -1px; user-select: none; overflow: visible; }
@@ -40,7 +40,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .sub { font-size: 12px; padding: 8px 14px; color: #c0392b; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; margin-bottom: -1px; opacity: 0.65; user-select: none; }
 .sub:hover { opacity: 1; }
 .sub.active { opacity: 1; border-bottom-color: #c0392b; font-weight: 700; }
-.content { flex: 1; padding: 24px 28px; overflow-y: auto; background: #f5f5f5; }
+.content { flex: 1; padding: 24px 28px; background: #f5f5f5; }
 .page-title { font-size: 21px; font-weight: 700; color: #1a1a1a; }
 .page-sub { font-size: 12px; color: #aaa; margin-top: 3px; margin-bottom: 20px; }
 .top-actions { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -530,25 +530,82 @@ tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div id="ess-schedule" class="hidden">
-          <div class="page-title">My Schedule</div><div class="page-sub">Your work schedule for this week.</div>
-          <div class="card">
-            <div class="card-hdr"><div class="card-ttl">Week of April 28 – May 4, 2026</div></div>
-            <div class="sched-grid">
-              <div class="sd"><div class="sdn">Mon</div><div class="sds">Morning</div><div class="sdt">8AM–5PM</div></div>
-              <div class="sd"><div class="sdn">Tue</div><div class="sds">Morning</div><div class="sdt">8AM–5PM</div></div>
-              <div class="sd"><div class="sdn">Wed</div><div class="sds">Morning</div><div class="sdt">8AM–5PM</div></div>
-              <div class="sd"><div class="sdn">Thu</div><div class="sds">Morning</div><div class="sdt">8AM–5PM</div></div>
-              <div class="sd"><div class="sdn">Fri</div><div class="sds">Morning</div><div class="sdt">8AM–5PM</div></div>
-              <div class="sd rest"><div class="sdn">Sat</div><div class="sds">Rest Day</div><div class="sdt">—</div></div>
-              <div class="sd rest"><div class="sdn">Sun</div><div class="sds">Rest Day</div><div class="sdt">—</div></div>
+
+          <!-- DEMO TOGGLE -->
+          <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:12px;color:#856404;display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            📌 Demo: Simulate schedule assignment →
+            <button class="action-btn btn-outline" style="font-size:11px;padding:4px 12px;" onclick="mySchedToggleAssigned()">Switch to No Schedule</button>
+          </div>
+
+          <!-- EMPTY STATE -->
+          <div id="my-sched-empty" class="hidden">
+            <div class="page-title" style="margin-bottom:4px;">My Schedule</div>
+            <div class="page-sub">Your assigned work schedule.</div>
+            <div class="card" style="text-align:center;padding:48px 28px;">
+              <div style="font-size:36px;margin-bottom:12px;">📅</div>
+              <div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:6px;">No schedule assigned</div>
+              <div style="font-size:12px;color:#aaa;max-width:320px;margin:0 auto;line-height:1.6;">You don’t have a work schedule assigned yet. Please coordinate with your HR admin to have one assigned to you.</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-hdr"><div class="card-ttl">Schedule Details</div></div>
-            <div class="prow"><span class="pl">Shift</span><span class="pv">Morning — 8:00 AM to 5:00 PM</span></div>
-            <div class="prow"><span class="pl">Rest Days</span><span class="pv">Saturday & Sunday</span></div>
-            <div class="prow"><span class="pl">Branch</span><span class="pv">Atrium — Iloilo City</span></div>
-            <div class="prow"><span class="pl">Department</span><span class="pv">Operations</span></div>
+
+          <!-- DETAIL VIEW -->
+          <div id="my-sched-detail">
+            <div class="top-actions" style="margin-bottom:16px;">
+              <div>
+                <div class="page-title">Regular Day Shift</div>
+                <div style="margin-top:4px;"><span class="pill pb">Day Shift</span></div>
+              </div>
+            </div>
+
+            <!-- Schedule Details card -->
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-ttl" style="margin-bottom:14px;">Schedule details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:3px;">Schedule type</div>
+                  <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Day Shift</div>
+                </div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:5px;">Working days</div>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;" id="my-sched-day-pills">
+                    <span class="pill pb" style="font-size:11px;padding:2px 8px;">Mon</span>
+                    <span class="pill pb" style="font-size:11px;padding:2px 8px;">Tue</span>
+                    <span class="pill pb" style="font-size:11px;padding:2px 8px;">Wed</span>
+                    <span class="pill pb" style="font-size:11px;padding:2px 8px;">Thu</span>
+                    <span class="pill pb" style="font-size:11px;padding:2px 8px;">Fri</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Slots — always shown as per-day table -->
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-ttl" style="margin-bottom:14px;">Time slots</div>
+              <div style="border:1px solid #ececec;border-radius:8px;overflow:hidden;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+                  <thead>
+                    <tr style="background:#f5f5f5;">
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;width:12%;">Day</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">AM In</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">AM Out</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">PM In</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">PM Out</th>
+                      <th style="padding:9px 12px;text-align:right;font-weight:600;color:#bbb;">Total hrs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Mon</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Tue</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Wed</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Thu</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Fri</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="text-align:right;margin-top:8px;font-size:12px;color:#bbb;">
+                Weekly total: <span style="font-weight:600;color:#1a1a1a;">40 hrs</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -566,7 +623,7 @@ tr:last-child td { border-bottom: none; }
         <div class="t">Holidays</div>
         <div class="t">Loans</div>
         <div class="t">Branches</div>
-        <div class="t">Schedules</div>
+        <div class="t" onclick="switchAdmin('adm-schedules',this)">Schedules</div>
         <div class="t">Notifications</div>
         <div class="t" onclick="switchAdmin('adm-reports',this)">Reports</div>
         <div class="t" onclick="switchAdmin('adm-settings',this)">Settings</div>
@@ -635,22 +692,8 @@ tr:last-child td { border-bottom: none; }
               <div><div class="form-label">Company</div><select class="form-input"><option>All companies</option><option>Iloilo Supermart</option><option>IS Ventures</option></select></div>
               <div><div class="form-label">Branch</div><select class="form-input"><option>All branches</option><option>Atrium</option><option>Festive Walk</option><option>Robinsons</option></select></div>
               <div><div class="form-label">Employee</div><input class="form-input" type="text" placeholder="Search employee..."/></div>
-              <div>
-                <div class="form-label">Date from</div>
-                <div class="dp-trigger" id="dp-att-from-trigger" onclick="openDatePicker('att-from')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="#bbb" stroke-width="1.3"/><line x1="5" y1="1.5" x2="5" y2="4.5" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="1.5" x2="11" y2="4.5" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-                  <span id="dp-att-from-display" style="font-size:13px;color:#aaa;">Select date</span>
-                </div>
-                <input type="hidden" id="dp-att-from-value"/>
-              </div>
-              <div>
-                <div class="form-label">Date to</div>
-                <div class="dp-trigger" id="dp-att-to-trigger" onclick="openDatePicker('att-to')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="#bbb" stroke-width="1.3"/><line x1="5" y1="1.5" x2="5" y2="4.5" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="1.5" x2="11" y2="4.5" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-                  <span id="dp-att-to-display" style="font-size:13px;color:#aaa;">Select date</span>
-                </div>
-                <input type="hidden" id="dp-att-to-value"/>
-              </div>
+              <div><div class="form-label">Date from</div><input class="form-input" type="text" placeholder="Select date"/></div>
+              <div><div class="form-label">Date to</div><input class="form-input" type="text" placeholder="Select date"/></div>
               <div><div class="form-label">Status</div><select class="form-input"><option>All statuses</option><option>Present</option><option>Late</option><option>Absent</option><option>On Leave</option><option>Rest Day</option></select></div>
             </div>
             <div style="display:flex;justify-content:flex-end;gap:8px;">
@@ -689,7 +732,6 @@ tr:last-child td { border-bottom: none; }
             <div id="set-tab-bank" onclick="switchSettings('bank')" style="font-size:13px;padding:8px 16px;cursor:pointer;border-bottom:2px solid #c0392b;color:#c0392b;font-weight:600;margin-bottom:-1px;">Bank</div>
             <div id="set-tab-department" onclick="switchSettings('department')" style="font-size:13px;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#777;margin-bottom:-1px;">Department</div>
             <div id="set-tab-branch" onclick="switchSettings('branch')" style="font-size:13px;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#777;margin-bottom:-1px;">Branch</div>
-            <div id="set-tab-attendance-rules" onclick="switchSettings('attendance-rules')" style="font-size:13px;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;color:#777;margin-bottom:-1px;">Attendance Rules</div>
           </div>
 
           <!-- BANK -->
@@ -730,62 +772,6 @@ tr:last-child td { border-bottom: none; }
               </table>
             </div>
           </div>
-
-          <!-- ATTENDANCE RULES -->
-          <div id="set-attendance-rules" class="hidden">
-            <div style="margin-bottom:16px;">
-              <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Attendance Rules</div>
-              <div style="font-size:12px;color:#aaa;margin-top:2px;">Configure attendance deduction rules.</div>
-            </div>
-            <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">General</div>
-              <div style="max-width:180px;">
-                <div class="form-label">Work Start Time <span style="color:#c0392b;">*</span></div>
-                <div class="tp-trigger" id="tp-ar-work-start-trigger" onclick="openTimePicker('ar-work-start')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;max-width:180px;">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bbb" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-                  <span id="tp-ar-work-start-display" style="font-size:13px;color:#aaa;">08:00 AM</span>
-                </div>
-                <input type="hidden" id="tp-ar-work-start-value" value="AM-08-00"/>
-              </div>
-            </div>
-            <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">Late Brackets</div>
-              <div id="ar-brackets-container"></div>
-              <button onclick="arAddBracket()" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#c0392b;font-weight:600;cursor:pointer;padding:6px 0;background:none;border:none;margin-top:4px;">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                Add Bracket
-              </button>
-            </div>
-            <div class="card" style="margin-bottom:14px;">
-              <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">Half Day</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:300px;">
-                <div>
-                  <div class="form-label">Time From <span style="color:#c0392b;">*</span></div>
-                  <div class="tp-trigger" id="tp-ar-halfday-from-trigger" onclick="openTimePicker('ar-halfday-from')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bbb" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-                    <span id="tp-ar-halfday-from-display" style="font-size:13px;color:#aaa;">09:01 AM</span>
-                  </div>
-                  <input type="hidden" id="tp-ar-halfday-from-value" value="AM-09-01"/>
-                </div>
-                <div>
-                  <div class="form-label">Time To <span style="color:#c0392b;">*</span></div>
-                  <div class="tp-trigger" id="tp-ar-halfday-to-trigger" onclick="openTimePicker('ar-halfday-to')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bbb" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-                    <span id="tp-ar-halfday-to-display" style="font-size:13px;color:#aaa;">12:00 PM</span>
-                  </div>
-                  <input type="hidden" id="tp-ar-halfday-to-value" value="PM-12-00"/>
-                </div>
-              </div>
-              <div style="display:flex;align-items:flex-start;gap:6px;background:#EEF6FF;border:0.5px solid #B8D9F8;border-radius:6px;padding:10px 12px;margin-top:12px;font-size:11px;color:#1565C0;line-height:1.5;">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="8" cy="8" r="6.5" stroke="#1565C0" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="#1565C0" stroke-width="1.4" stroke-linecap="round"/></svg>
-                Deduction for Half Day is automatically computed based on the employee's daily rate. No manual amount entry is required.
-              </div>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:8px;">
-              <button class="action-btn btn-outline" onclick="arReset()">Cancel</button>
-              <button class="action-btn btn-red" onclick="arSave()">Save Rules</button>
-            </div>
-          </div>
         </div>
 
         <!-- SETTINGS MODAL -->
@@ -817,6 +803,209 @@ tr:last-child td { border-bottom: none; }
           </div>
         </div>
 
+        <!-- ADMIN SCHEDULES -->
+        <div id="adm-schedules" class="hidden">
+
+          <!-- LIST VIEW -->
+          <div id="adm-sched-list">
+            <div class="top-actions" style="margin-bottom:16px;">
+              <div><div class="page-title">Work Schedules</div><div class="page-sub">Manage all work schedule configurations.</div></div>
+              <button class="action-btn btn-red" onclick="admSchedShowNew()">+ New Schedule</button>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+              <table><thead><tr><th>Schedule Name</th><th>Type</th><th>Working Days</th><th>Time Slots</th><th>Total / Week</th><th style="text-align:center;">Action</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:600;">Regular Day Shift</td>
+                    <td><span class="pill pb">Day Shift</span></td>
+                    <td>Mon – Fri</td>
+                    <td>8:00 AM – 5:00 PM</td>
+                    <td>40 hrs</td>
+                    <td style="text-align:center;"><span style="color:#c0392b;cursor:pointer;font-size:12px;font-weight:600;" onclick="admSchedShowDetail('uniform')">View</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:600;">Flex Saturday Shift</td>
+                    <td><span class="pill pb">Day Shift</span></td>
+                    <td>Mon – Sat</td>
+                    <td>Per day</td>
+                    <td>44 hrs</td>
+                    <td style="text-align:center;"><span style="color:#c0392b;cursor:pointer;font-size:12px;font-weight:600;" onclick="admSchedShowDetail('perday')">View</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- NEW SCHEDULE FORM -->
+          <div id="adm-sched-new" class="hidden">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;" onclick="admSchedShowList()">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span style="font-size:13px;color:#c0392b;font-weight:600;">Back</span>
+            </div>
+            <div class="page-title" style="margin-bottom:20px;">New Work Schedule</div>
+
+            <!-- Schedule Details -->
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-ttl" style="margin-bottom:14px;">Schedule details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div>
+                  <div class="form-label">Schedule name <span style="color:#c0392b;">*</span></div>
+                  <input class="form-input" type="text" placeholder="e.g. Regular Day Shift" id="new-sched-name"/>
+                </div>
+                <div>
+                  <div class="form-label">Schedule type</div>
+                  <select class="form-input" id="new-sched-type">
+                    <option>Day Shift</option>
+                    <option>Night Shift</option>
+                    <option>Split Shift</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div class="form-label" style="margin-bottom:8px;">Working days</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="new-sched-days">
+                  <label id="nsd-mon" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#e3f2fd;color:#1565c0;font-weight:600;user-select:none;"><input type="checkbox" checked data-day="Mon" style="display:none;" onchange="nsdDayToggle(this)"/>Mon</label>
+                  <label id="nsd-tue" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#e3f2fd;color:#1565c0;font-weight:600;user-select:none;"><input type="checkbox" checked data-day="Tue" style="display:none;" onchange="nsdDayToggle(this)"/>Tue</label>
+                  <label id="nsd-wed" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#e3f2fd;color:#1565c0;font-weight:600;user-select:none;"><input type="checkbox" checked data-day="Wed" style="display:none;" onchange="nsdDayToggle(this)"/>Wed</label>
+                  <label id="nsd-thu" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#e3f2fd;color:#1565c0;font-weight:600;user-select:none;"><input type="checkbox" checked data-day="Thu" style="display:none;" onchange="nsdDayToggle(this)"/>Thu</label>
+                  <label id="nsd-fri" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#e3f2fd;color:#1565c0;font-weight:600;user-select:none;"><input type="checkbox" checked data-day="Fri" style="display:none;" onchange="nsdDayToggle(this)"/>Fri</label>
+                  <label id="nsd-sat" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#f5f5f5;color:#aaa;user-select:none;"><input type="checkbox" data-day="Sat" style="display:none;" onchange="nsdDayToggle(this)"/>Sat</label>
+                  <label id="nsd-sun" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 12px;border-radius:6px;border:1px solid #e0e0e0;background:#f5f5f5;color:#aaa;user-select:none;"><input type="checkbox" data-day="Sun" style="display:none;" onchange="nsdDayToggle(this)"/>Sun</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Slots -->
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-hdr" style="margin-bottom:14px;">
+                <div class="card-ttl">Time slots</div>
+                <label style="display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#888;cursor:pointer;user-select:none;">
+                  Customize per day
+                  <div id="nsd-toggle-track" onclick="nsdTogglePerDay()" style="width:36px;height:20px;border-radius:10px;background:#e0e0e0;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
+                    <div id="nsd-toggle-thumb" style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Uniform slots -->
+              <div id="nsd-uniform-slots">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+                  <div><div class="form-label">AM In</div><input class="form-input" type="time" value="08:00"/></div>
+                  <div><div class="form-label">AM Out</div><input class="form-input" type="time" value="12:00"/></div>
+                  <div><div class="form-label">PM In</div><input class="form-input" type="time" value="13:00"/></div>
+                  <div><div class="form-label">PM Out</div><input class="form-input" type="time" value="17:00"/></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="width:180px;">
+                    <div class="form-label">Lunch break (minutes)</div>
+                    <select class="form-input"><option>30</option><option selected>60</option><option>90</option></select>
+                  </div>
+                  <div style="margin-top:18px;background:#f5f5f5;border-radius:6px;padding:8px 14px;font-size:12px;color:#888;">
+                    Total: <span style="font-weight:600;color:#1a1a1a;">8 hrs / day</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Per day slots -->
+              <div id="nsd-perday-slots" class="hidden">
+                <div style="font-size:12px;color:#888;margin-bottom:12px;padding:8px 12px;background:#e3f2fd;border-radius:6px;border-left:3px solid #1565c0;">
+                  Each selected working day has its own time slot. Uncheck a day above to remove it.
+                </div>
+                <div id="nsd-perday-rows"></div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+              <button class="action-btn btn-outline" onclick="admSchedShowList()">Cancel</button>
+              <button class="action-btn btn-red" onclick="admSchedSave()">Create Schedule</button>
+            </div>
+          </div>
+
+          <!-- DETAIL VIEW -->
+          <div id="adm-sched-detail" class="hidden">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;" onclick="admSchedShowList()">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span style="font-size:13px;color:#c0392b;font-weight:600;">Work schedules</span>
+            </div>
+            <div class="top-actions" style="margin-bottom:16px;">
+              <div>
+                <div class="page-title" id="det-sched-name">Regular Day Shift</div>
+                <div style="margin-top:4px;"><span class="pill pb">Day Shift</span></div>
+              </div>
+              <button class="action-btn btn-outline">✏️ Edit</button>
+            </div>
+
+            <!-- Details card -->
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-ttl" style="margin-bottom:14px;">Schedule details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:3px;">Schedule type</div>
+                  <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Day Shift</div>
+                </div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;" id="det-days-chip">
+                  <div style="font-size:11px;color:#bbb;margin-bottom:5px;">Working days</div>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;" id="det-days-pills"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time slots — uniform -->
+            <div id="det-uniform" class="card hidden" style="margin-bottom:14px;">
+              <div class="card-hdr" style="margin-bottom:14px;">
+                <div class="card-ttl">Time slots</div>
+                <span class="pill" style="background:#f0f0f0;color:#888;font-size:11px;padding:3px 10px;">Uniform</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">AM In</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">8:00 AM</div></div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">AM Out</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">12:00 PM</div></div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">PM In</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">1:00 PM</div></div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">PM Out</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">5:00 PM</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">Lunch break</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">60 mins</div></div>
+                <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:#bbb;margin-bottom:3px;">Total per day</div><div style="font-size:14px;font-weight:700;color:#1a1a1a;">8 hrs</div></div>
+              </div>
+              <div style="margin-top:10px;padding:8px 12px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#888;">
+                Applied uniformly to: <span style="font-weight:600;color:#1a1a1a;">Mon, Tue, Wed, Thu, Fri</span>
+                &nbsp;·&nbsp; Weekly total: <span style="font-weight:600;color:#1a1a1a;">40 hrs</span>
+              </div>
+            </div>
+
+            <!-- Time slots — per day -->
+            <div id="det-perday" class="card hidden" style="margin-bottom:14px;">
+              <div class="card-hdr" style="margin-bottom:14px;">
+                <div class="card-ttl">Time slots</div>
+                <span class="pill pb" style="font-size:11px;padding:3px 10px;">Per day</span>
+              </div>
+              <div style="border:1px solid #ececec;border-radius:8px;overflow:hidden;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+                  <thead>
+                    <tr style="background:#f5f5f5;">
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;width:12%;">Day</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">AM In</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">AM Out</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">PM In</th>
+                      <th style="padding:9px 12px;text-align:left;font-weight:600;color:#bbb;">PM Out</th>
+                      <th style="padding:9px 12px;text-align:right;font-weight:600;color:#bbb;">Total hrs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Mon</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Tue</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Wed</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Thu</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Fri</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">1:00 PM</td><td style="padding:9px 12px;">5:00 PM</td><td style="padding:9px 12px;text-align:right;font-weight:600;">8 hrs</td></tr>
+                    <tr style="border-top:1px solid #f7f7f7;"><td style="padding:9px 12px;font-weight:600;">Sat</td><td style="padding:9px 12px;">8:00 AM</td><td style="padding:9px 12px;">12:00 PM</td><td style="padding:9px 12px;">—</td><td style="padding:9px 12px;">—</td><td style="padding:9px 12px;text-align:right;font-weight:600;">4 hrs</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="text-align:right;margin-top:8px;font-size:12px;color:#bbb;">Weekly total: <span style="font-weight:600;color:#1a1a1a;">44 hrs</span></div>
+            </div>
+          </div>
+
+        </div>
+
         <div id="adm-ess" class="hidden">
           <div id="ae-dashboard">
             <div class="page-title">My Dashboard</div><div class="page-sub">Welcome back, SA! Here's your personal summary.</div>
@@ -842,7 +1031,7 @@ tr:last-child td { border-bottom: none; }
 
 <script>
 const essTabs=['ess-dashboard','ess-payslips','ess-attendance','ess-leave','ess-loans','ess-schedule','ess-profile'];
-const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-reports','adm-settings','adm-ess'];
+const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-reports','adm-settings','adm-ess','adm-schedules'];
 const aeTabs=['ae-dashboard','ae-payslips','ae-attendance','ae-leave','ae-loans','ae-schedule','ae-profile'];
 
 function switchEss(id,el){
@@ -864,6 +1053,10 @@ function switchAdmin(id,el){
     document.getElementById('ae-dashboard').classList.remove('hidden');
     document.querySelectorAll('#adm-ess-sub .sub').forEach(s=>s.classList.remove('active'));
     document.querySelectorAll('#adm-ess-sub .sub')[0].classList.add('active');
+  } else if(id==='adm-schedules'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-schedules').classList.remove('hidden');
+    admSchedShowList();
   } else {
     sub.classList.add('hidden');
     document.getElementById(id).classList.remove('hidden');
@@ -875,6 +1068,93 @@ function switchAdmEss(id,el){
   document.querySelectorAll('#adm-ess-sub .sub').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.remove('hidden');
   el.classList.add('active');
+}
+
+/* ---- MY SCHEDULE (Employee view demo) ---- */
+let mySchedHasSchedule=true;
+let mySchedIsPerDay=false;
+function mySchedToggleAssigned(){
+  mySchedHasSchedule=!mySchedHasSchedule;
+  document.getElementById('my-sched-empty').classList.toggle('hidden',mySchedHasSchedule);
+  document.getElementById('my-sched-detail').classList.toggle('hidden',!mySchedHasSchedule);
+  const btn=document.querySelector('[onclick="mySchedToggleAssigned()"]');
+  if(btn)btn.textContent=mySchedHasSchedule?'Switch to No Schedule':'Switch to Has Schedule';
+}
+
+
+/* ---- ADMIN SCHEDULES navigation ---- */
+function admSchedShowList(){
+  document.getElementById('adm-sched-list').classList.remove('hidden');
+  document.getElementById('adm-sched-new').classList.add('hidden');
+  document.getElementById('adm-sched-detail').classList.add('hidden');
+}
+function admSchedShowNew(){
+  document.getElementById('adm-sched-list').classList.add('hidden');
+  document.getElementById('adm-sched-new').classList.remove('hidden');
+  document.getElementById('adm-sched-detail').classList.add('hidden');
+  nsdIsPerDay=false;
+  document.getElementById('nsd-toggle-track').style.background='#e0e0e0';
+  document.getElementById('nsd-toggle-thumb').style.left='2px';
+  document.getElementById('nsd-uniform-slots').classList.remove('hidden');
+  document.getElementById('nsd-perday-slots').classList.add('hidden');
+}
+function admSchedShowDetail(mode){
+  document.getElementById('adm-sched-list').classList.add('hidden');
+  document.getElementById('adm-sched-new').classList.add('hidden');
+  document.getElementById('adm-sched-detail').classList.remove('hidden');
+  const isPerDay=mode==='perday';
+  document.getElementById('det-uniform').classList.toggle('hidden',isPerDay);
+  document.getElementById('det-perday').classList.toggle('hidden',!isPerDay);
+  document.getElementById('det-sched-name').textContent=isPerDay?'Flex Saturday Shift':'Regular Day Shift';
+  const days=isPerDay?['Mon','Tue','Wed','Thu','Fri','Sat']:['Mon','Tue','Wed','Thu','Fri'];
+  document.getElementById('det-days-pills').innerHTML=days.map(d=>`<span class="pill pb" style="font-size:11px;padding:2px 8px;">${d}</span>`).join('');
+}
+function admSchedSave(){admSchedShowDetail(nsdIsPerDay?'perday':'uniform');}
+
+/* ---- NEW SCHEDULE FORM: day pills & per-day toggle ---- */
+let nsdActiveDays=['Mon','Tue','Wed','Thu','Fri'];
+let nsdIsPerDay=false;
+const NSD_ORDER=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function nsdDayToggle(cb){
+  const day=cb.dataset.day;
+  const lbl=document.getElementById('nsd-'+day.toLowerCase());
+  if(cb.checked){
+    if(!nsdActiveDays.includes(day))nsdActiveDays.push(day);
+    lbl.style.background='#e3f2fd';lbl.style.color='#1565c0';
+  } else {
+    nsdActiveDays=nsdActiveDays.filter(d=>d!==day);
+    lbl.style.background='#f5f5f5';lbl.style.color='#aaa';
+  }
+  if(nsdIsPerDay)nsdRenderPerDayRows();
+}
+function nsdTogglePerDay(){
+  nsdIsPerDay=!nsdIsPerDay;
+  const track=document.getElementById('nsd-toggle-track');
+  const thumb=document.getElementById('nsd-toggle-thumb');
+  if(nsdIsPerDay){
+    track.style.background='#c0392b';thumb.style.left='18px';
+    document.getElementById('nsd-uniform-slots').classList.add('hidden');
+    document.getElementById('nsd-perday-slots').classList.remove('hidden');
+    nsdRenderPerDayRows();
+  } else {
+    track.style.background='#e0e0e0';thumb.style.left='2px';
+    document.getElementById('nsd-uniform-slots').classList.remove('hidden');
+    document.getElementById('nsd-perday-slots').classList.add('hidden');
+  }
+}
+function nsdRenderPerDayRows(){
+  const sorted=NSD_ORDER.filter(d=>nsdActiveDays.includes(d));
+  document.getElementById('nsd-perday-rows').innerHTML=sorted.map(day=>`
+    <div style="margin-bottom:10px;padding:12px;border:1px solid #ececec;border-radius:8px;background:#fafafa;">
+      <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">${day}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:8px;align-items:end;">
+        <div><div class="form-label" style="font-size:11px;">AM In</div><input class="form-input" type="time" value="08:00"/></div>
+        <div><div class="form-label" style="font-size:11px;">AM Out</div><input class="form-input" type="time" value="12:00"/></div>
+        <div><div class="form-label" style="font-size:11px;">PM In</div><input class="form-input" type="time" value="13:00"/></div>
+        <div><div class="form-label" style="font-size:11px;">PM Out</div><input class="form-input" type="time" value="17:00"/></div>
+        <div style="padding:8px 10px;background:white;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;color:#888;white-space:nowrap;">8 hrs</div>
+      </div>
+    </div>`).join('');
 }
 
 function setView(role,e){
@@ -1380,89 +1660,21 @@ function settingsToggleStatus(type,id){
   settingsRenderTable(type);
 }
 
-// Attendance Rules
-let arBrackets=[
-  {id:1,from:'08:01',to:'08:15',type:'per_minute',amount:'1.00'},
-  {id:2,from:'08:16',to:'09:00',type:'flat',amount:'125.00'},
-];
-let arNextId=3;
-
-function arRenderBrackets(){
-  const container=document.getElementById('ar-brackets-container');
-  if(!container)return;
-  let html='';
-  arBrackets.forEach((b,i)=>{
-    html+=`<div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:14px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:12px;font-weight:600;color:#1a1a1a;">Bracket ${i+1}</span>
-        ${i>0?`<span onclick="arRemoveBracket(${b.id})" style="font-size:11px;color:#A32D2D;cursor:pointer;font-weight:500;">✕ Remove</span>`:''}
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
-        <div>
-          <div class="form-label">Time From <span style="color:#c0392b;">*</span></div>
-          <div class="tp-trigger" id="tp-ar-b${b.id}-from-trigger" onclick="openTimePicker('ar-b${b.id}-from')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bbb" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span id="tp-ar-b${b.id}-from-display" style="font-size:13px;color:${b.from?'#1a1a1a':'#aaa'};">${b.from||'Select time'}</span>
-          </div>
-          <input type="hidden" id="tp-ar-b${b.id}-from-value" value="${b.from?'AM-'+b.from.replace(':','-'):''}"/>
-        </div>
-        <div>
-          <div class="form-label">Time To <span style="color:#c0392b;">*</span></div>
-          <div class="tp-trigger" id="tp-ar-b${b.id}-to-trigger" onclick="openTimePicker('ar-b${b.id}-to')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:white;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bbb" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="#bbb" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span id="tp-ar-b${b.id}-to-display" style="font-size:13px;color:${b.to?'#1a1a1a':'#aaa'};">${b.to||'Select time'}</span>
-          </div>
-          <input type="hidden" id="tp-ar-b${b.id}-to-value" value="${b.to?'AM-'+b.to.replace(':','-'):''}"/>
-        </div>
-        <div>
-          <div class="form-label">Deduction Type <span style="color:#c0392b;">*</span></div>
-          <select class="form-input" onchange="arUpdateBracket(${b.id},'type',this.value)">
-            <option value="per_minute" ${b.type==='per_minute'?'selected':''}>Per Minute</option>
-            <option value="flat" ${b.type==='flat'?'selected':''}>Flat Rate</option>
-          </select>
-        </div>
-        <div>
-          <div class="form-label">Amount (₱) <span style="color:#c0392b;">*</span></div>
-          <input class="form-input" type="number" value="${b.amount}" min="0" step="0.01" onchange="arUpdateBracket(${b.id},'amount',this.value)"/>
-        </div>
-      </div>
-    </div>`;
-  });
-  container.innerHTML=html;
-}
-
-function arAddBracket(){
-  arBrackets.push({id:arNextId++,from:'',to:'',type:'flat',amount:''});
-  arRenderBrackets();
-}
-
-function arRemoveBracket(id){
-  arBrackets=arBrackets.filter(b=>b.id!==id);
-  arRenderBrackets();
-}
-
-function arUpdateBracket(id,field,val){
-  const b=arBrackets.find(b=>b.id===id);
-  if(b)b[field]=val;
-}
-
-function arSave(){alert('Attendance Rules saved!');}
-function arReset(){arRenderBrackets();}
-
 function switchSettings(tab){
-  ['bank','department','branch','attendance-rules'].forEach(t=>{
-    const el=document.getElementById('set-'+t);
-    if(el)el.classList.add('hidden');
-    const tab=document.getElementById('set-tab-'+t);
-    if(tab){tab.style.borderBottomColor='transparent';tab.style.color='#777';tab.style.fontWeight='400';}
+  ['bank','department','branch'].forEach(t=>{
+    document.getElementById('set-'+t).classList.add('hidden');
+    const el=document.getElementById('set-tab-'+t);
+    el.style.borderBottomColor='transparent';
+    el.style.color='#777';
+    el.style.fontWeight='400';
   });
-  const content=document.getElementById('set-'+tab);
-  if(content)content.classList.remove('hidden');
-  const activeTab=document.getElementById('set-tab-'+tab);
-  if(activeTab){activeTab.style.borderBottomColor='#c0392b';activeTab.style.color='#c0392b';activeTab.style.fontWeight='600';}
+  document.getElementById('set-'+tab).classList.remove('hidden');
+  const active=document.getElementById('set-tab-'+tab);
+  active.style.borderBottomColor='#c0392b';
+  active.style.color='#c0392b';
+  active.style.fontWeight='600';
   settingsCurrent=tab;
-  if(tab==='attendance-rules')arRenderBrackets();
-  else settingsRenderTable(tab);
+  settingsRenderTable(tab);
 }
 
 document.addEventListener('DOMContentLoaded',function(){
@@ -1490,99 +1702,49 @@ function buildAdmAttGrid(){
   subRow.innerHTML=subHtml;
   const employees=[
     {name:'Juan Dela Cruz',data:[
-      // 1-May: Present on time
+      {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'l',ami:'08:18',amo:'12:01',pmi:'13:05',pmo:'17:02'},
+      {t:'r'},{t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'4-May',punches:[{time:'08:00',type:'IN AM'},{time:'08:03',type:'IN AM'},{time:'12:00',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
+      {t:'n',ami:'08:02',amo:'12:00',pmi:'13:00',pmo:'17:01'},
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 2-May: Late Bracket 1 (8:06 = 6 mins late = ₱6)
-      {t:'l',ami:'08:06',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 3-May: Rest
+      {t:'r'},{t:'a'},
+      {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'l',ami:'08:25',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
       {t:'r'},
-      // 4-May: Present + flag
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'4-May',punches:[{time:'08:00',type:'IN AM'},{time:'08:03',type:'IN AM'},{time:'12:00',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
-      // 5-May: Late Bracket 2 (8:45 = ₱125 flat)
-      {t:'l',ami:'08:45',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 6-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 7-May: Rest
-      {t:'r'},
-      // 8-May: Absent
-      {t:'a'},
-      // 9-May: Half Day (10:30 AM in)
-      {t:'hd',ami:'10:30',amo:'12:00',pmi:'—',pmo:'—'},
-      // 10-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 11-May: Late Bracket 1 (8:14)
-      {t:'l',ami:'08:14',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 12-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 13-May: Rest
-      {t:'r'},
-      // 14-May: On Leave
-      {t:'lv'},
-      // 15-May: Present
+      {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
     ]},
     {name:'Maria Santos',data:[
-      // 1-May: Present
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:01'},
-      // 2-May: Late Bracket 2 (8:30 = ₱125 flat)
-      {t:'l',ami:'08:30',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 3-May: Rest
-      {t:'r'},
-      // 4-May: Present + flag (stepped out)
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'4-May',punches:[{time:'08:00',type:'IN AM'},{time:'10:30',type:'OUT AM'},{time:'10:48',type:'IN AM'},{time:'12:01',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
-      // 5-May: Half Day (9:15 AM in)
-      {t:'hd',ami:'09:15',amo:'12:00',pmi:'—',pmo:'—'},
-      // 6-May: On Leave
-      {t:'lv'},
-      // 7-May: Rest
-      {t:'r'},
-      // 8-May: Late Bracket 1 (8:10 = 10 mins = ₱10)
-      {t:'l',ami:'08:10',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 9-May: Present
+      {t:'r'},{t:'r'},
+      {t:'n',ami:'08:03',amo:'12:00',pmi:'13:02',pmo:'17:00'},
+      {t:'lv'},{t:'lv'},{t:'r'},
+      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'8-May',punches:[{time:'08:00',type:'IN AM'},{time:'10:30',type:'OUT AM'},{time:'10:48',type:'IN AM'},{time:'12:01',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
+      {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:01'},
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 10-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:01'},
-      // 11-May: Absent
-      {t:'a'},
-      // 12-May: Present
       {t:'n',ami:'08:02',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 13-May: Rest
       {t:'r'},
-      // 14-May: Present
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 15-May: Late Bracket 2 (8:50 = ₱125 flat)
-      {t:'l',ami:'08:50',amo:'12:00',pmi:'13:00',pmo:'17:00'},
+      {t:'a'},
     ]},
     {name:'Roberto Cruz',data:[
-      // 1-May: Absent
       {t:'a'},
-      // 2-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 3-May: Rest
+      {t:'n',ami:'08:05',amo:'12:00',pmi:'13:00',pmo:'17:00'},
       {t:'r'},
-      // 4-May: Late Bracket 1 + flag (8:05 = 5 mins = ₱5)
-      {t:'l',ami:'08:05',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'4-May',punches:[{time:'08:05',type:'IN AM'},{time:'08:07',type:'IN AM'},{time:'12:00',type:'OUT AM'},{time:'12:02',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
-      // 5-May: Half Day (11:00 AM in)
-      {t:'hd',ami:'11:00',amo:'12:00',pmi:'—',pmo:'—'},
-      // 6-May: Late Bracket 2 (8:30 = ₱125 flat)
+      {t:'n',ami:'08:02',amo:'12:00',pmi:'13:01',pmo:'17:00'},
+      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',flag:true,date:'5-May',punches:[{time:'08:00',type:'IN AM'},{time:'08:02',type:'IN AM'},{time:'12:00',type:'OUT AM'},{time:'12:02',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:00',type:'OUT PM'}]},
       {t:'l',ami:'08:30',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 7-May: Rest
       {t:'r'},
-      // 8-May: Present
-      {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 9-May: Present
       {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 10-May: Present
+      {t:'n',ami:'08:00',amo:'12:01',pmi:'13:00',pmo:'17:00'},
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 11-May: Absent
       {t:'a'},
-      // 12-May: Present
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:01'},
-      // 13-May: Rest
       {t:'r'},
-      // 14-May: Late Bracket 1 (8:12 = 12 mins = ₱12)
-      {t:'l',ami:'08:12',amo:'12:00',pmi:'13:00',pmo:'17:00'},
-      // 15-May: Present
+      {t:'n',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:00'},
       {t:'n',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00'},
     ]},
   ];
@@ -1595,7 +1757,6 @@ function buildAdmAttGrid(){
       if(d.t==='r'){html+=`<td colspan="4" style="text-align:center;padding:7px 4px;font-size:10px;color:#aaa;background:#fafafa;${border}">Rest</td>`;}
       else if(d.t==='a'){html+=`<td colspan="4" style="text-align:center;padding:7px 4px;font-size:10px;color:#A32D2D;background:#fff5f5;font-weight:600;${border}">Absent</td>`;}
       else if(d.t==='lv'){html+=`<td colspan="4" style="text-align:center;padding:7px 4px;font-size:10px;color:#3C3489;background:#EEEDFE;font-weight:500;${border}">Leave</td>`;}
-      else if(d.t==='hd'){html+=`<td style="text-align:center;padding:7px 4px;font-size:11px;color:#A32D2D;">${d.ami}</td><td style="text-align:center;padding:7px 4px;font-size:11px;">${d.amo}</td><td colspan="2" style="text-align:center;padding:7px 4px;font-size:10px;color:#0C447C;background:#E6F1FB;font-weight:500;${border}">Half Day</td>`;}
       else{
         const lc=d.t==='l'?'color:#A32D2D;':'';
         const flag=d.flag?` ${buildFlagTooltip(d.date,d.punches)}`:'';
@@ -1619,48 +1780,36 @@ let attFpPickYear=2026;let attFpPickMonth=4;let attFpSelYear=2026;let attFpSelMo
 
 const attDataMap={
   '2026-4':[
-    // May 07 - Present (on time)
-    {date:'May 07',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
-    // May 06 - Late Bracket 1 (8:01-8:15, ₱1/min) = 6 mins late = ₱6 deduction
-    {date:'May 06',ami:'08:06',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'late'},
-    // May 05 - Late Bracket 1 with multiple punch
-    {date:'May 05',ami:'08:10',amo:'12:00',pmi:'13:00',pmo:'17:01',status:'late',multi:true,punches:[
-      {time:'08:10',type:'IN AM'},{time:'08:12',type:'IN AM',dup:true},
+    {date:'May 06',ami:'08:02',amo:'12:01',pmi:'13:02',pmo:'17:03',status:'present'},
+    {date:'May 05',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:01',status:'present',multi:true,punches:[
+      {time:'08:00',type:'IN AM'},{time:'08:03',type:'IN AM',dup:true},
       {time:'12:00',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:01',type:'OUT PM'}
     ]},
-    // May 04 - Late Bracket 2 (8:16-9:00, ₱125 flat)
-    {date:'May 04',ami:'08:45',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'late'},
-    // May 03 - Half Day (9:01-12:00)
-    {date:'May 03',ami:'10:30',amo:'12:00',pmi:'—',pmo:'—',status:'half_day'},
-    // May 02 - Rest Day
+    {date:'May 04',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
+    {date:'May 03',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'rest'},
     {date:'May 02',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'rest'},
-    // May 01 - Rest Day
-    {date:'May 01',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'rest'},
-    // Apr 30 - On Leave
-    {date:'Apr 30',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'leave'},
-    // Apr 29 - Absent
-    {date:'Apr 29',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'absent'},
-    // Apr 28 - Present with multiple punch (stepped out)
-    {date:'Apr 28',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:02',status:'present',multi:true,punches:[
-      {time:'08:00',type:'IN AM'},{time:'10:30',type:'OUT AM'},{time:'10:45',type:'IN AM'},
+    {date:'May 01',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'leave'},
+    {date:'Apr 30',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:02',status:'present',multi:true,punches:[
+      {time:'08:01',type:'IN AM'},{time:'10:30',type:'OUT AM'},{time:'10:45',type:'IN AM'},
       {time:'12:00',type:'OUT AM'},{time:'13:00',type:'IN PM'},{time:'17:02',type:'OUT PM'}
     ]},
+    {date:'Apr 29',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'absent'},
+    {date:'Apr 28',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
   ],
   '2026-3':[
-    {date:'Apr 30',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
-    {date:'Apr 29',ami:'08:14',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'late'},
-    {date:'Apr 28',ami:'08:30',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'late'},
-    {date:'Apr 27',ami:'09:30',amo:'12:00',pmi:'—',pmo:'—',status:'half_day'},
+    {date:'Apr 30',ami:'08:01',amo:'12:00',pmi:'13:00',pmo:'17:01',status:'present'},
+    {date:'Apr 29',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'absent'},
+    {date:'Apr 28',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
+    {date:'Apr 27',ami:'08:05',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
     {date:'Apr 26',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'rest'},
     {date:'Apr 25',ami:'—',amo:'—',pmi:'—',pmo:'—',status:'rest'},
-    {date:'Apr 24',ami:'08:00',amo:'12:00',pmi:'13:00',pmo:'17:00',status:'present'},
+    {date:'Apr 24',ami:'08:00',amo:'12:01',pmi:'13:00',pmo:'17:00',status:'present'},
   ],
 };
 const attBadge={
   present:'<span class="pill pg">Present</span>',
   absent:'<span class="pill pr">Absent</span>',
   late:'<span class="pill pa">Late</span>',
-  half_day:'<span class="pill pb">Half Day</span>',
   leave:'<span class="pill pb">On Leave</span>',
   rest:'<span class="pill" style="background:#f0f0f0;color:#888;">Rest</span>',
 };
@@ -1677,14 +1826,13 @@ function renderAttTable(){
     html=`<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;">No records found.</td></tr>`;
   }else{
     rows.forEach((r,i)=>{
-      const tc=(v,isLate)=>v==='—'?`<td style="text-align:center;color:#ccc;">${v}</td>`:`<td style="text-align:center;${isLate?'color:#A32D2D;font-weight:600;':''}">${v}</td>`;
+      const tc=v=>v==='—'?`<td style="text-align:center;color:#ccc;">${v}</td>`:`<td style="text-align:center;">${v}</td>`;
       const multiIcon=r.multi?`<svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="margin-left:3px;vertical-align:middle;"><path d="M8 3v5M8 11v1" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#BA7517" stroke-width="1.3"/></svg>`:'';
       const chevron=r.multi?`<span style="font-size:10px;color:#aaa;margin-left:4px;transition:transform 0.2s;display:inline-block;transform:${attExpanded[i]?'rotate(180deg)':'rotate(0deg)'};">▾</span>`:'';
       const rowClick=r.multi?`onclick="attToggleRow(${i})" style="cursor:pointer;"`:'' ;
-      const isLateAmi = r.status==='late'||r.status==='half_day';
       html+=`<tr ${rowClick} style="border-bottom:1px solid #f7f7f7;">
         <td style="font-weight:600;">${r.date}${chevron}</td>
-        ${tc(r.ami,isLateAmi)}${tc(r.amo,false)}${tc(r.pmi,false)}
+        ${tc(r.ami)}${tc(r.amo)}${tc(r.pmi)}
         <td style="text-align:center;">${r.pmo==='—'?'—':r.pmo}${multiIcon}</td>
         <td style="text-align:center;">${attBadge[r.status]||''}</td>
       </tr>`;
