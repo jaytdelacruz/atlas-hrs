@@ -98,6 +98,19 @@ tr:last-child td { border-bottom: none; }
 .hidden { display: none !important; }
 .wa-type-card { display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid #ececec;border-radius:10px;cursor:pointer;transition:border-color 0.15s,background 0.15s; }
 .wa-type-card:hover { border-color:#c0392b;background:#fdecea; }
+.pr-check { display:flex;align-items:center;gap:8px;font-size:12.5px;color:#333;cursor:pointer;padding:6px 10px;border:1px solid #ececec;border-radius:6px; }
+.pr-check input { accent-color:#c0392b; }
+.pr-rel-row { display:flex;gap:10px;align-items:center;padding:9px 12px;background:#fafafa;border:1px solid #f0f0f0;border-radius:7px;font-size:12.5px;color:#333; }
+.pr-rel-row span:first-child { font-weight:700; }
+.pr-step { display:flex;align-items:center;gap:8px;flex:1;position:relative; }
+.pr-step + .pr-step::before { content:'';position:absolute;left:-3px;width:6px;height:1px;background:#ddd; }
+.pr-step-num { width:24px;height:24px;border-radius:50%;background:#f0f0f0;color:#999;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.pr-step.active .pr-step-num { background:#c0392b;color:white; }
+.pr-step.done .pr-step-num { background:#e8f5e9;color:#2e7d32; }
+.pr-step-name { font-size:12px;font-weight:500;color:#999; }
+.pr-step.active .pr-step-name,.pr-step.done .pr-step-name { color:#1a1a1a;font-weight:600; }
+.pr-step-line { flex:1;height:1px;background:#e0e0e0;margin:0 6px; }
+.pr-step.done + .pr-step-line { background:#2e7d32; }
 .form-label { font-size:12px;font-weight:600;color:#555;margin-bottom:6px; }
 .form-input { width:100%;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;color:#1a1a1a;outline:none;font-family:inherit; }
 .form-input:focus { border-color:#c0392b; }
@@ -111,15 +124,57 @@ tr:last-child td { border-bottom: none; }
 .flag-tip-type{color:#aaa;}
 .flag-tip-dup{font-size:10px;color:#BA7517;background:#FAEEDA;padding:1px 6px;border-radius:99px;white-space:nowrap;}
 .flag-tip-duprow{background:#FFF8EC;border-radius:4px;padding:3px 4px;margin:1px 0;}
+/* First-login email gate */
+.email-gate-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center; }
+.email-gate-box { background:white;border-radius:16px;width:440px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,0.22);overflow:hidden; }
+.email-gate-header { background:#c0392b;padding:28px 28px 22px;text-align:center; }
+.email-gate-icon { width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);margin:0 auto 14px;display:flex;align-items:center;justify-content:center; }
+.email-gate-body { padding:26px 28px 28px; }
+.email-gate-input { width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;color:#1a1a1a;outline:none;font-family:inherit;margin-top:6px; }
+.email-gate-input:focus { border-color:#c0392b; }
+.email-gate-error { font-size:11.5px;color:#c0392b;margin-top:6px;display:none; }
 </style>
 </head>
 <body>
+
+<!-- FIRST LOGIN EMAIL GATE MODAL -->
+<div id="email-gate-overlay" class="email-gate-overlay">
+  <div class="email-gate-box">
+    <div class="email-gate-header" id="email-gate-header">
+      <div class="email-gate-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="white" stroke-width="1.8"/><path d="M2 8l10 6 10-6" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:white;margin-bottom:6px;">Set up your profile</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,0.8);line-height:1.5;">Before you can access Atlas HRS, you need to link your email address to your account.</div>
+    </div>
+    <div class="email-gate-body" id="email-gate-body">
+      <div>
+        <div class="form-label">Email Address <span style="color:#c0392b;">*</span></div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:6px;">Must match your Atlas login username above.</div>
+        <input id="email-gate-input" class="email-gate-input" type="email" placeholder="e.g. juan.delacruz@iloilosupermart.com" oninput="emailGateClearError()" onkeydown="if(event.key==='Enter')emailGateSubmit()"/>
+        <div id="email-gate-error" class="email-gate-error">⚠ Email must match your Atlas login username.</div>
+      </div>
+      <button id="email-gate-btn" onclick="emailGateSubmit()" style="width:100%;margin-top:20px;padding:11px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Confirm & Continue →</button>
+      <div style="font-size:11px;color:#bbb;text-align:center;margin-top:12px;">This is required to access any part of the system.</div>
+    </div>
+    <!-- Success state -->
+    <div id="email-gate-success" style="display:none;padding:32px 28px 28px;text-align:center;">
+      <div style="width:60px;height:60px;border-radius:50%;background:#e8f5e9;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#2e7d32" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">Profile Linked!</div>
+      <div style="font-size:12.5px;color:#888;line-height:1.6;margin-bottom:20px;">Your email address has been successfully linked to your profile. You can now access the system.</div>
+      <button onclick="emailGateContinue()" style="padding:10px 28px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Continue to Dashboard →</button>
+    </div>
+  </div>
+</div>
 
 <div class="demo-bar">
   <span>🎭 View as:</span>
   <button class="demo-btn on" onclick="setView('employee',event)">👤 Employee (Juan)</button>
   <button class="demo-btn" onclick="setView('admin',event)">👔 Admin (SA)</button>
   <span style="margin-left:16px;opacity:0.4;">Toggle to see how each role experiences HRS</span>
+  <span style="margin-left:auto;opacity:0.5;font-size:10px;">Demo: <button class="demo-btn" onclick="emailGateReset()" style="font-size:10px;padding:2px 8px;">Re-trigger email gate</button></span>
 </div>
 
 <div class="topgreen">
@@ -206,27 +261,112 @@ tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div id="ess-payslips" class="hidden">
-          <div class="page-title">My Payslips</div><div class="page-sub">Your payslip history and breakdown.</div>
+          <div class="top-actions">
+            <div>
+              <div class="page-title">My Payslip</div>
+              <div class="page-sub">Detailed breakdown of your earnings and deductions · Read-only</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="form-input" id="my-pay-period" style="padding:7px 10px;font-size:12px;max-width:200px;" onchange="myPayRender()">
+                <option value="0">May 1 – 15, 2026 (current)</option>
+                <option value="1">April 16 – 30, 2026</option>
+                <option value="2">April 1 – 15, 2026</option>
+                <option value="3">March 16 – 31, 2026</option>
+                <option value="4">March 1 – 15, 2026</option>
+              </select>
+              <button class="action-btn btn-outline" onclick="alert('Payslip PDF download (stub)')">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Download PDF
+              </button>
+              <button class="action-btn btn-red" onclick="alert('Payslip emailed to juan.delacruz@iloilosupermart.com (stub)')">Email me a copy</button>
+            </div>
+          </div>
+
+          <!-- Payslip status banner -->
+          <div id="my-pay-banner" class="card" style="display:flex;align-items:center;gap:14px;padding:14px 18px;margin-bottom:14px;background:#e8f5e9;border-color:#a5d6a7;">
+            <div style="width:36px;height:36px;border-radius:50%;background:#2e7d32;color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;">✓</div>
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:600;color:#1a1a1a;" id="my-pay-banner-title">Released — paid via BPI on May 20, 2026</div>
+              <div style="font-size:11.5px;color:#558b2f;margin-top:2px;" id="my-pay-banner-sub">Cutoff May 1 – 15, 2026 · Account ending in 4287</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px;color:#558b2f;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Net pay</div>
+              <div style="font-size:22px;font-weight:700;color:#2e7d32;" id="my-pay-banner-net">₱15,300</div>
+            </div>
+          </div>
+
+          <!-- Top 3 summary stats -->
+          <div class="stats-row g4" style="margin-bottom:14px;">
+            <div class="stat"><div class="stat-label">Gross earnings</div><div class="stat-val" id="my-pay-gross">₱18,500</div><div class="stat-sub">Basic + allowances + OT</div></div>
+            <div class="stat"><div class="stat-label">Total deductions</div><div class="stat-val" style="color:#c62828;" id="my-pay-ded">₱3,200</div><div class="stat-sub">Statutory + others</div></div>
+            <div class="stat"><div class="stat-label">Tax withheld</div><div class="stat-val" id="my-pay-tax">₱1,700</div><div class="stat-sub">BIR withholding</div></div>
+            <div class="stat"><div class="stat-label">Hours worked</div><div class="stat-val" id="my-pay-hrs">88.0</div><div class="stat-sub" id="my-pay-hrs-sub">11 days · 0 OT</div></div>
+          </div>
+
+          <!-- Two-column breakdown -->
           <div class="two-col">
+            <div class="card" style="padding:0;">
+              <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#2e7d32;">Earnings</div>
+                <div style="font-size:11px;color:#aaa;">Auto-computed</div>
+              </div>
+              <div id="my-pay-earn" style="padding:6px 0;"></div>
+              <div style="padding:14px 18px;border-top:2px solid #f0f0f0;background:#f8fbf8;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:700;color:#1a1a1a;font-size:13px;">Gross earnings</span>
+                <span style="font-weight:700;color:#2e7d32;font-size:15px;font-family:'Courier New',monospace;" id="my-pay-earn-total">₱18,500.00</span>
+              </div>
+            </div>
+            <div class="card" style="padding:0;">
+              <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#c62828;">Deductions</div>
+                <div style="font-size:11px;color:#aaa;">Per cutoff</div>
+              </div>
+              <div id="my-pay-deds" style="padding:6px 0;"></div>
+              <div style="padding:14px 18px;border-top:2px solid #f0f0f0;background:#fdf5f5;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:700;color:#1a1a1a;font-size:13px;">Total deductions</span>
+                <span style="font-weight:700;color:#c62828;font-size:15px;font-family:'Courier New',monospace;" id="my-pay-deds-total">−₱3,200.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Net pay highlight -->
+          <div class="card" style="padding:0;background:linear-gradient(135deg,#e8f5e9 0%, #f1f8e9 100%);border-color:#a5d6a7;margin-top:14px;">
+            <div style="padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#558b2f;">Net pay (take-home)</div>
+                <div style="font-size:11px;color:#888;margin-top:3px;" id="my-pay-net-sub">To be credited to BPI ending in 4287</div>
+              </div>
+              <div style="font-size:32px;font-weight:700;color:#2e7d32;font-family:'Courier New',monospace;" id="my-pay-net">₱15,300.00</div>
+            </div>
+          </div>
+
+          <!-- YTD + History -->
+          <div class="two-col" style="margin-top:14px;">
             <div class="card">
-              <div class="card-hdr"><div class="card-ttl">April 2026</div><span class="pill pg">Released</span></div>
-              <div class="prow"><span class="pl">Basic Pay</span><span class="pv">₱15,000</span></div>
-              <div class="prow"><span class="pl">Allowances</span><span class="pv">₱3,500</span></div>
-              <div class="prow"><span class="pl">Gross Pay</span><span class="pv g">₱18,500</span></div>
-              <div class="prow"><span class="pl">SSS</span><span class="pv r">-₱900</span></div>
-              <div class="prow"><span class="pl">PhilHealth</span><span class="pv r">-₱400</span></div>
-              <div class="prow"><span class="pl">Pag-IBIG</span><span class="pv r">-₱200</span></div>
-              <div class="prow"><span class="pl">Withholding Tax</span><span class="pv r">-₱1,700</span></div>
-              <div class="prow" style="border-top:2px solid #f0f0f0;margin-top:6px;padding-top:12px;"><span class="pl" style="font-weight:700;color:#1a1a1a;font-size:14px;">Net Pay</span><span class="pv g" style="font-size:16px;">₱15,300</span></div>
+              <div class="card-hdr"><div class="card-ttl">Year-to-date (2026)</div></div>
+              <div class="prow"><span class="pl">Gross earnings YTD</span><span class="pv">₱148,000</span></div>
+              <div class="prow"><span class="pl">SSS contributions YTD</span><span class="pv">₱7,200</span></div>
+              <div class="prow"><span class="pl">PhilHealth YTD</span><span class="pv">₱3,200</span></div>
+              <div class="prow"><span class="pl">Pag-IBIG YTD</span><span class="pv">₱1,600</span></div>
+              <div class="prow"><span class="pl">Income tax paid YTD</span><span class="pv">₱13,600</span></div>
+              <div class="prow" style="border-top:2px solid #f0f0f0;margin-top:6px;padding-top:12px;"><span class="pl" style="font-weight:700;color:#1a1a1a;">Take-home YTD</span><span class="pv g">₱122,400</span></div>
             </div>
             <div class="card">
-              <div class="card-hdr"><div class="card-ttl">Payslip History</div></div>
-              <table><thead><tr><th>Period</th><th>Gross</th><th>Net Pay</th><th>Status</th></tr></thead><tbody>
-                <tr><td>April 2026</td><td>₱18,500</td><td>₱15,300</td><td><span class="pill pg">Released</span></td></tr>
-                <tr><td>March 2026</td><td>₱18,500</td><td>₱15,300</td><td><span class="pill pg">Released</span></td></tr>
-                <tr><td>February 2026</td><td>₱18,500</td><td>₱15,300</td><td><span class="pill pg">Released</span></td></tr>
-              </tbody></table>
+              <div class="card-hdr">
+                <div class="card-ttl">Payslip history</div>
+                <span class="view-all" onclick="alert('Bulk download (stub)')">Download all ›</span>
+              </div>
+              <table>
+                <thead><tr><th>Period</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Net</th><th>Status</th><th></th></tr></thead>
+                <tbody id="my-pay-history"></tbody>
+              </table>
             </div>
+          </div>
+
+          <!-- Question / flag link -->
+          <div style="margin-top:14px;padding:12px 16px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;display:flex;gap:10px;align-items:center;font-size:12.5px;color:#e65100;">
+            <span style="font-weight:700;">?</span>
+            <span style="flex:1;">Notice something off? <strong>Flag this payslip</strong> and HR will review it within 2 business days.</span>
+            <button class="action-btn btn-outline" style="color:#e65100;border-color:#e65100;padding:5px 12px;font-size:11px;" onclick="alert('Flagged for HR review (stub)')">Flag for review</button>
           </div>
         </div>
         <div id="ess-attendance" class="hidden">
@@ -510,7 +650,8 @@ tr:last-child td { border-bottom: none; }
             <div>
               <div class="card" style="margin-bottom:14px;">
                 <div class="card-hdr"><div class="card-ttl">Contact Information</div></div>
-                <div class="prow"><span class="pl">Personal Email</span><span class="pv">juan.delacruz@email.com</span></div>
+                <div class="prow"><span class="pl">Atlas Email</span><span class="pv" id="ess-profile-email" style="color:#c0392b;font-family:'Courier New',monospace;font-size:12px;">—</span></div>
+                <div class="prow"><span class="pl">Personal Email</span><span class="pv">juan.personal@gmail.com</span></div>
                 <div class="prow"><span class="pl">Mobile Number</span><span class="pv">+63 912 345 6789</span></div>
                 <div class="prow"><span class="pl">Emergency Contact</span><span class="pv">Maria Dela Cruz</span></div>
                 <div class="prow"><span class="pl">Emergency Number</span><span class="pv">+63 917 987 6543</span></div>
@@ -617,8 +758,10 @@ tr:last-child td { border-bottom: none; }
         <div class="t active" onclick="switchAdmin('adm-dashboard',this)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>Dashboard</div>
         <div class="t" onclick="switchAdmin('adm-employees',this)">Employees</div>
         <div class="t">Work Arrangements</div>
-        <div class="t">Payroll</div>
+        <div class="t" onclick="switchAdmin('adm-payroll',this)">Payroll</div>
         <div class="t" onclick="switchAdmin('adm-attendance',this)">Attendance</div>
+        <div class="t" onclick="switchAdmin('adm-encode-dtr',this)" style="color:#c0392b;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Encode DTR</div>
+        <div class="t" onclick="switchAdmin('adm-dtr-inbox',this)" style="color:#c0392b;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 9l3-6h6l3 6v4a1 1 0 01-1 1H3a1 1 0 01-1-1V9z" stroke="currentColor" stroke-width="1.3"/><path d="M2 9h3l1 2h4l1-2h3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>DTR Inbox <span style="background:#c0392b;color:white;font-size:9px;padding:1px 6px;border-radius:99px;font-weight:700;margin-left:2px;">3</span></div>
         <div class="t">Payslips</div>
         <div class="t">Holidays</div>
         <div class="t">Loans</div>
@@ -671,10 +814,10 @@ tr:last-child td { border-bottom: none; }
             <button class="action-btn btn-red">+ Add Employee</button>
           </div>
           <div class="card">
-            <table><thead><tr><th>Name</th><th>Employee ID</th><th>Department</th><th>Branch</th><th>Menu Access</th><th>Status</th></tr></thead><tbody>
-              <tr><td>Juan Dela Cruz</td><td>EMP-0042</td><td>Operations</td><td>Atrium</td><td><span class="pill pg">My ESS Only</span></td><td><span class="pill pg">Active</span></td></tr>
-              <tr><td>Haidee Manabat</td><td>EMP-0018</td><td>IT</td><td>Main</td><td><span class="pill pb">Full Access</span></td><td><span class="pill pg">Active</span></td></tr>
-              <tr><td>Maria Santos</td><td>EMP-0031</td><td>Finance</td><td>Atrium</td><td><span class="pill pg">My ESS Only</span></td><td><span class="pill pg">Active</span></td></tr>
+            <table><thead><tr><th>Name</th><th>Employee ID</th><th>Department</th><th>Branch</th><th>Atlas Email</th><th>Menu Access</th><th>Status</th></tr></thead><tbody>
+              <tr><td>Juan Dela Cruz</td><td>EMP-0042</td><td>Operations</td><td>Atrium</td><td id="adm-emp-email-0042" style="font-family:'Courier New',monospace;font-size:11.5px;color:#aaa;">—</td><td><span class="pill pg">My ESS Only</span></td><td><span class="pill pg">Active</span></td></tr>
+              <tr><td>Haidee Manabat</td><td>EMP-0018</td><td>IT</td><td>Main</td><td style="font-family:'Courier New',monospace;font-size:11.5px;color:#1a1a1a;">haidee.manabat@iloilosupermart.com</td><td><span class="pill pb">Full Access</span></td><td><span class="pill pg">Active</span></td></tr>
+              <tr><td>Maria Santos</td><td>EMP-0031</td><td>Finance</td><td>Atrium</td><td style="font-family:'Courier New',monospace;font-size:11.5px;color:#aaa;">—</td><td><span class="pill pg">My ESS Only</span></td><td><span class="pill pg">Active</span></td></tr>
             </tbody></table>
           </div>
         </div>
@@ -716,6 +859,363 @@ tr:last-child td { border-bottom: none; }
             </div>
           </div>
         </div>
+        <!-- ============== ENCODE DTR (for Manual DTR / Roving employees) ============== -->
+        <div id="adm-encode-dtr" class="hidden">
+          <div class="top-actions">
+            <div>
+              <div class="page-title">Encode Manual DTR</div>
+              <div class="page-sub">For roving employees without a fixed branch. Supervisor encodes daily entries → submits batch to HR per cutoff.</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn btn-outline" onclick="dtrOpenPaste()" style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="11" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4v2H6z" stroke="currentColor" stroke-width="1.3"/></svg>Paste from Excel</button>
+              <button class="action-btn btn-red" onclick="dtrSubmitBatch()">Submit batch to HR ›</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:14px;padding:12px 18px;">
+            <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:12px;">
+              <div><span style="color:#999;">Cutoff period</span> <strong style="color:#1a1a1a;margin-left:6px;">May 1 – May 15, 2026</strong></div>
+              <div style="width:1px;height:14px;background:#e0e0e0;"></div>
+              <div><span style="color:#999;">Supervisor</span> <strong style="color:#1a1a1a;margin-left:6px;">Haidee Manabat</strong></div>
+              <div style="width:1px;height:14px;background:#e0e0e0;"></div>
+              <div><span style="color:#999;">Roving staff</span> <strong style="color:#1a1a1a;margin-left:6px;" id="dtr-stat-total">5</strong></div>
+              <div><span style="color:#999;">Encoded</span> <strong style="color:#2e7d32;margin-left:6px;" id="dtr-stat-done">1</strong> / <span id="dtr-stat-total2">5</span></div>
+              <div style="flex:1;"></div>
+              <div style="font-size:11px;color:#aaa;">Draft auto-saved · last edit 2 min ago</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;">
+            <!-- Employee list -->
+            <div class="card" style="padding:0;overflow:hidden;">
+              <div style="padding:14px 16px;border-bottom:1px solid #f0f0f0;">
+                <div class="card-ttl" style="font-size:13px;">Roving employees</div>
+                <div style="font-size:11px;color:#aaa;margin-top:2px;">Click to encode</div>
+              </div>
+              <div id="dtr-emp-list"></div>
+            </div>
+
+            <!-- DTR grid -->
+            <div class="card" style="padding:0;overflow:hidden;">
+              <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div class="card-ttl" style="font-size:13px;" id="dtr-cur-name">Pedro Reyes</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:2px;" id="dtr-cur-role">Area Merchandiser · Roving · EMP-0066</div>
+                </div>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <span id="dtr-cur-status" class="pill pa">Draft</span>
+                  <button class="action-btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="dtrMarkEncoded()">Mark as encoded ✓</button>
+                </div>
+              </div>
+              <div style="overflow-x:auto;">
+                <table id="dtr-grid" style="min-width:780px;">
+                  <thead><tr>
+                    <th style="padding:9px 10px;">Date</th>
+                    <th style="padding:9px 10px;">Day</th>
+                    <th style="padding:9px 10px;">Time in</th>
+                    <th style="padding:9px 10px;">Break</th>
+                    <th style="padding:9px 10px;">Time out</th>
+                    <th style="padding:9px 10px;">Location</th>
+                    <th style="padding:9px 10px;text-align:right;">Hrs</th>
+                    <th style="padding:9px 10px;text-align:right;">OT</th>
+                    <th style="padding:9px 10px;">Remarks</th>
+                  </tr></thead>
+                  <tbody id="dtr-grid-body"></tbody>
+                </table>
+              </div>
+              <div style="padding:12px 18px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                <div style="color:#999;">15-day cutoff · enter only the days they worked</div>
+                <div style="display:flex;gap:18px;">
+                  <div><span style="color:#999;">Total hrs</span> <strong id="dtr-tot-hrs" style="color:#1a1a1a;margin-left:6px;">72.0</strong></div>
+                  <div><span style="color:#999;">OT hrs</span> <strong id="dtr-tot-ot" style="color:#1a1a1a;margin-left:6px;">3.5</strong></div>
+                  <div><span style="color:#999;">Days worked</span> <strong id="dtr-tot-days" style="color:#1a1a1a;margin-left:6px;">9</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paste-from-Excel dialog -->
+          <div id="dtr-paste-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;display:flex;align-items:center;justify-content:center;">
+            <div style="background:white;border-radius:12px;width:560px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,0.2);">
+              <div style="padding:18px 22px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:15px;font-weight:700;color:#1a1a1a;">Paste from Excel</div><div style="font-size:11px;color:#aaa;margin-top:2px;">Copy rows from your spreadsheet · auto-detects Time in / Break / Time out / Location</div></div>
+                <span style="font-size:20px;color:#aaa;cursor:pointer;" onclick="dtrClosePaste()">×</span>
+              </div>
+              <div style="padding:18px 22px;">
+                <textarea id="dtr-paste-area" placeholder="Paste tab-separated rows here…" style="width:100%;min-height:140px;border:1px solid #e0e0e0;border-radius:6px;padding:10px;font-family:'Courier New',monospace;font-size:12px;outline:none;" oninput="dtrParsePaste()"></textarea>
+                <div id="dtr-paste-preview" style="font-size:11px;color:#aaa;margin-top:8px;">No rows detected yet.</div>
+              </div>
+              <div style="padding:14px 22px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;border-radius:0 0 12px 12px;">
+                <button class="action-btn btn-outline" onclick="dtrClosePaste()">Cancel</button>
+                <button class="action-btn btn-red" onclick="dtrApplyPaste()">Apply rows</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============== DTR INBOX (HR validation queue) ============== -->
+        <div id="adm-dtr-inbox" class="hidden">
+          <div class="top-actions">
+            <div>
+              <div class="page-title">DTR Inbox</div>
+              <div class="page-sub">Manual DTR batches submitted by supervisors. Validate before payroll run.</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn btn-outline">Filter ▾</button>
+              <button class="action-btn btn-red" onclick="dtrInboxValidateAll()">Validate all ›</button>
+            </div>
+          </div>
+
+          <div class="stats-row g4" style="margin-bottom:14px;">
+            <div class="stat"><div class="stat-label">Pending review</div><div class="stat-val" id="dti-stat-pending">3</div><div class="stat-sub">Awaiting HR</div></div>
+            <div class="stat"><div class="stat-label">Validated</div><div class="stat-val" style="color:#2e7d32;" id="dti-stat-ok">7</div><div class="stat-sub">This cutoff</div></div>
+            <div class="stat"><div class="stat-label">Sent back</div><div class="stat-val" style="color:#c62828;" id="dti-stat-back">1</div><div class="stat-sub">For correction</div></div>
+            <div class="stat"><div class="stat-label">Cutoff</div><div class="stat-val" style="font-size:15px;">May 1 – 15</div><div class="stat-sub">Closes May 16</div></div>
+          </div>
+
+          <div class="card" style="padding:0;overflow:hidden;">
+            <table>
+              <thead><tr>
+                <th>Supervisor</th><th>Employee</th><th>Role</th><th style="text-align:right;">Days</th><th style="text-align:right;">Hrs</th><th style="text-align:right;">OT</th><th>Submitted</th><th>Status</th><th></th>
+              </tr></thead>
+              <tbody id="dti-body"></tbody>
+            </table>
+          </div>
+
+          <!-- Side drawer for review -->
+          <div id="dti-drawer" class="hidden" style="position:fixed;inset:0;z-index:9997;">
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);" onclick="dtiCloseDrawer()"></div>
+            <div style="position:absolute;right:0;top:0;bottom:0;width:640px;max-width:95vw;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,0.15);">
+              <div style="padding:18px 22px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:#1a1a1a;" id="dti-d-name">Pedro Reyes</div>
+                  <div style="font-size:11px;color:#aaa;margin-top:2px;" id="dti-d-meta">Submitted by Haidee Manabat · May 16, 2026 · 9:42 AM</div>
+                </div>
+                <span style="font-size:20px;color:#aaa;cursor:pointer;" onclick="dtiCloseDrawer()">×</span>
+              </div>
+              <div style="flex:1;overflow-y:auto;padding:18px 22px;">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+                  <div class="stat" style="padding:11px 14px;"><div class="stat-label">Days</div><div class="stat-val" style="font-size:20px;" id="dti-d-days">9</div></div>
+                  <div class="stat" style="padding:11px 14px;"><div class="stat-label">Total hrs</div><div class="stat-val" style="font-size:20px;" id="dti-d-hrs">72.0</div></div>
+                  <div class="stat" style="padding:11px 14px;"><div class="stat-label">OT hrs</div><div class="stat-val" style="font-size:20px;" id="dti-d-ot">3.5</div></div>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Daily entries</div>
+                <div style="border:1px solid #ececec;border-radius:8px;overflow:hidden;">
+                  <table style="font-size:12px;">
+                    <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Hrs</th><th>Location</th></tr></thead>
+                    <tbody id="dti-d-rows"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div style="padding:14px 22px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <button class="action-btn btn-outline" style="color:#c62828;border-color:#c62828;" onclick="dtiSendBack()">Send back…</button>
+                <div style="display:flex;gap:8px;">
+                  <button class="action-btn btn-outline" onclick="dtiCloseDrawer()">Close</button>
+                  <button class="action-btn btn-red" onclick="dtiValidate()">Validate ✓</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============== PAYROLL (Run cutoff wizard) ============== -->
+        <div id="adm-payroll" class="hidden">
+          <div class="top-actions">
+            <div>
+              <div class="page-title">Run Payroll</div>
+              <div class="page-sub">Cutoff → Compute → Review → Release. Manual DTR data is pulled in automatically once validated.</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn btn-outline" onclick="prShowHistory()">History</button>
+              <button class="action-btn btn-outline" onclick="prResetWizard()">Reset</button>
+            </div>
+          </div>
+
+          <!-- Stepper -->
+          <div class="card" style="padding:18px 22px;margin-bottom:14px;">
+            <div id="pr-stepper" style="display:flex;align-items:center;gap:6px;"></div>
+          </div>
+
+          <!-- Step 1: Cutoff -->
+          <div id="pr-step-cutoff">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;">
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Cutoff configuration</div></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                  <div><div class="form-label">Period</div><select class="form-input" id="pr-period"><option>May 1 – 15, 2026</option><option>Apr 16 – 30, 2026</option><option>Apr 1 – 15, 2026</option></select></div>
+                  <div><div class="form-label">Pay date</div><input class="form-input" id="pr-paydate" value="May 20, 2026"/></div>
+                  <div><div class="form-label">Frequency</div><select class="form-input"><option>Semi-monthly</option><option>Monthly</option><option>Weekly</option></select></div>
+                  <div><div class="form-label">Currency</div><select class="form-input"><option>PHP — Philippine Peso</option></select></div>
+                </div>
+                <div class="form-label">Include</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+                  <label class="pr-check"><input type="checkbox" checked id="pr-inc-ot"/> <span>Overtime pay</span></label>
+                  <label class="pr-check"><input type="checkbox" checked id="pr-inc-allow"/> <span>Allowances (transport · meal · comms)</span></label>
+                  <label class="pr-check"><input type="checkbox" checked id="pr-inc-comm"/> <span>Sales commissions</span></label>
+                  <label class="pr-check"><input type="checkbox" checked id="pr-inc-loan"/> <span>Loan amortizations</span></label>
+                  <label class="pr-check"><input type="checkbox" checked id="pr-inc-tardy"/> <span>Tardiness deductions</span></label>
+                  <label class="pr-check"><input type="checkbox" id="pr-inc-13m"/> <span>13th month accrual</span></label>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Cutoff readiness</div></div>
+                <div id="pr-readiness"></div>
+                <button class="action-btn btn-red" onclick="prGo(1)" id="pr-cutoff-next" style="width:100%;margin-top:14px;">Continue to Compute ›</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Compute -->
+          <div id="pr-step-compute" class="hidden">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;">
+              <div class="card">
+                <div class="card-hdr">
+                  <div class="card-ttl" id="pr-compute-title">Computing payslips…</div>
+                  <span id="pr-compute-badge" class="pill pa">Running</span>
+                </div>
+                <div style="height:6px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin-bottom:10px;">
+                  <div id="pr-compute-bar" style="height:100%;width:0;background:#c0392b;transition:width 0.2s;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#999;margin-bottom:14px;">
+                  <span id="pr-compute-pct">0%</span>
+                  <span id="pr-compute-count">0 / 0 employees</span>
+                </div>
+                <div id="pr-compute-log" style="background:#fafafa;border:1px solid #ececec;border-radius:8px;padding:12px 14px;height:220px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11.5px;color:#888;line-height:1.7;"></div>
+              </div>
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Live totals</div></div>
+                <div class="prow"><span class="pl">Net to disburse</span><span class="pv g" id="pr-live-net">₱0</span></div>
+                <div class="prow"><span class="pl">Total employees</span><span class="pv" id="pr-live-count">0</span></div>
+                <div class="prow"><span class="pl">With overtime</span><span class="pv" id="pr-live-ot">0</span></div>
+                <div class="prow"><span class="pl">With loans</span><span class="pv" id="pr-live-loans">0</span></div>
+                <div class="prow"><span class="pl">Manual DTR (validated)</span><span class="pv" id="pr-live-dtr">0</span></div>
+                <button class="action-btn btn-red" onclick="prGo(2)" id="pr-compute-next" style="width:100%;margin-top:14px;" disabled>Computing…</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Review -->
+          <div id="pr-step-review" class="hidden">
+            <div class="stats-row g4" style="margin-bottom:14px;">
+              <div class="stat"><div class="stat-label">Total gross</div><div class="stat-val" id="pr-rv-gross">₱0</div></div>
+              <div class="stat"><div class="stat-label">Total deductions</div><div class="stat-val" id="pr-rv-deds">₱0</div></div>
+              <div class="stat"><div class="stat-label">Net to disburse</div><div class="stat-val" style="color:#2e7d32;" id="pr-rv-net">₱0</div></div>
+              <div class="stat"><div class="stat-label">Statutory remit</div><div class="stat-val" id="pr-rv-stat">₱0</div></div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+              <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
+                <div class="card-ttl" style="font-size:13px;">Per-employee breakdown</div>
+                <div style="flex:1;"></div>
+                <input id="pr-rv-search" placeholder="Search employee…" class="form-input" style="max-width:220px;padding:6px 10px;font-size:12px;" oninput="prRenderReview()"/>
+                <select id="pr-rv-filter" class="form-input" style="max-width:140px;padding:6px 10px;font-size:12px;" onchange="prRenderReview()">
+                  <option value="all">All employees</option>
+                  <option value="adjusted">Adjusted only</option>
+                  <option value="dtr">Manual DTR only</option>
+                  <option value="ot">With overtime</option>
+                </select>
+              </div>
+              <div style="overflow-x:auto;">
+                <table style="min-width:880px;">
+                  <thead><tr>
+                    <th>Employee</th><th style="text-align:right;">Basic</th><th style="text-align:right;">OT/Allow</th><th style="text-align:right;">Stat ded.</th><th style="text-align:right;">Loan</th><th style="text-align:right;">Net pay</th><th>Source</th><th></th>
+                  </tr></thead>
+                  <tbody id="pr-rv-body"></tbody>
+                </table>
+              </div>
+              <div style="padding:14px 18px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:12px;color:#888;" id="pr-rv-count">0 employees</div>
+                <div style="display:flex;gap:8px;">
+                  <button class="action-btn btn-outline" onclick="prGo(0)">‹ Back to setup</button>
+                  <button class="action-btn btn-red" onclick="prGo(3)">Continue to Release ›</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Release -->
+          <div id="pr-step-release" class="hidden">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;">
+              <div class="card" id="pr-release-card">
+                <div class="card-hdr"><div class="card-ttl">Confirm release</div><span class="pill pa">This action cannot be undone</span></div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                  <div class="pr-rel-row"><span style="color:#2e7d32;">✓</span> <span id="pr-rel-r1">Payslips will be generated and emailed</span></div>
+                  <div class="pr-rel-row"><span style="color:#2e7d32;">✓</span> <span id="pr-rel-r2">Bank disbursement file (BPI/BDO) will be queued</span></div>
+                  <div class="pr-rel-row"><span style="color:#2e7d32;">✓</span> BIR 1601-C draft auto-populated for remittance</div>
+                  <div class="pr-rel-row"><span style="color:#e65100;">!</span> Loan amortizations will reduce outstanding balances</div>
+                  <div class="pr-rel-row"><span style="color:#e65100;">!</span> Payslips visible to employees on pay date</div>
+                </div>
+                <div class="form-label">Type <strong>RELEASE</strong> to confirm</div>
+                <input class="form-input" id="pr-rel-confirm" placeholder="RELEASE" oninput="prCheckRelease()"/>
+              </div>
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Final summary</div></div>
+                <div class="prow"><span class="pl">Period</span><span class="pv" id="pr-rel-period">—</span></div>
+                <div class="prow"><span class="pl">Pay date</span><span class="pv" id="pr-rel-paydate">—</span></div>
+                <div class="prow"><span class="pl">Employees</span><span class="pv" id="pr-rel-count">—</span></div>
+                <div class="prow"><span class="pl">Gross</span><span class="pv" id="pr-rel-gross">—</span></div>
+                <div class="prow"><span class="pl">Net to disburse</span><span class="pv g" id="pr-rel-net">—</span></div>
+                <button class="action-btn btn-red" id="pr-rel-go" onclick="prRelease()" style="width:100%;margin-top:14px;" disabled>Release payroll</button>
+              </div>
+            </div>
+            <div id="pr-released" class="hidden card" style="text-align:center;padding:50px 30px;margin-top:14px;">
+              <div style="width:64px;height:64px;border-radius:50%;background:#e8f5e9;color:#2e7d32;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;font-weight:700;">✓</div>
+              <div style="font-size:22px;font-weight:700;color:#1a1a1a;">Payroll released</div>
+              <div style="color:#888;margin-top:6px;font-size:13px;" id="pr-released-sub">—</div>
+              <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;">
+                <button class="action-btn btn-outline">Download bank file</button>
+                <button class="action-btn btn-outline">View payslips</button>
+                <button class="action-btn btn-red" onclick="prResetWizard()">Back to setup</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payslip detail drawer (Payroll → Review → click row/Adjust) -->
+        <div id="pr-payslip-drawer" class="hidden" style="position:fixed;inset:0;z-index:9996;">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);" onclick="prCloseDrawer()"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;width:720px;max-width:95vw;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,0.15);">
+            <div style="padding:18px 22px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;"><div id="pr-pd-name" style="font-size:15px;font-weight:700;color:#1a1a1a;">—</div><span id="pr-pd-adj" class="pill pa hidden" style="font-size:10px;">Adjusted</span></div>
+                <div id="pr-pd-meta" style="font-size:11px;color:#aaa;margin-top:2px;">—</div>
+              </div>
+              <span style="font-size:20px;color:#aaa;cursor:pointer;" onclick="prCloseDrawer()">×</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:18px 22px;background:#fafafa;">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+                <div class="stat" style="padding:11px 14px;"><div class="stat-label">Gross earnings</div><div class="stat-val" style="font-size:18px;" id="pr-pd-gross">₱0</div></div>
+                <div class="stat" style="padding:11px 14px;"><div class="stat-label">Total deductions</div><div class="stat-val" style="font-size:18px;color:#c62828;" id="pr-pd-ded">₱0</div></div>
+                <div class="stat" style="padding:11px 14px;"><div class="stat-label">Net pay</div><div class="stat-val" style="font-size:18px;color:#2e7d32;" id="pr-pd-net">₱0</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="card" style="padding:0;">
+                  <div style="padding:11px 14px;border-bottom:1px solid #f0f0f0;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#2e7d32;">Earnings</div>
+                  <div id="pr-pd-earn"></div>
+                </div>
+                <div class="card" style="padding:0;">
+                  <div style="padding:11px 14px;border-bottom:1px solid #f0f0f0;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#c62828;">Deductions</div>
+                  <div id="pr-pd-deds"></div>
+                </div>
+              </div>
+              <div style="margin-top:14px;">
+                <div class="form-label">Adjustment note (visible to approver)</div>
+                <input class="form-input" id="pr-pd-note" placeholder="e.g. Retro increase per HR memo · approved by RBC"/>
+              </div>
+              <div style="margin-top:10px;padding:11px 14px;background:#fff8e1;border:1px solid #ffe082;border-radius:7px;font-size:11.5px;color:#e65100;display:flex;gap:8px;align-items:flex-start;">
+                <span style="font-weight:700;flex-shrink:0;">!</span>
+                <span>Manual adjustments override auto-computed values. The original computation is preserved — click <strong>Reset to computed</strong> to restore.</span>
+              </div>
+            </div>
+            <div style="padding:14px 22px;border-top:1px solid #f0f0f0;background:white;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <button class="action-btn btn-outline" onclick="prResetPayslip()" id="pr-pd-reset">Reset to computed</button>
+              <div style="display:flex;gap:8px;">
+                <button class="action-btn btn-outline" onclick="prCloseDrawer()">Cancel</button>
+                <button class="action-btn btn-red" onclick="prSaveAdjustment()">Save adjustments ✓</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="adm-reports" class="hidden">
           <div class="page-title">Reports</div>
           <div class="page-sub">Generate and view HRS reports.</div>
@@ -1029,9 +1529,9 @@ tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const essTabs=['ess-dashboard','ess-payslips','ess-attendance','ess-leave','ess-loans','ess-schedule','ess-profile'];
-const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-reports','adm-settings','adm-ess','adm-schedules'];
+const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-encode-dtr','adm-dtr-inbox','adm-payroll','adm-reports','adm-settings','adm-ess','adm-schedules'];
 const aeTabs=['ae-dashboard','ae-payslips','ae-attendance','ae-leave','ae-loans','ae-schedule','ae-profile'];
 
 function switchEss(id,el){
@@ -1039,6 +1539,7 @@ function switchEss(id,el){
   document.querySelectorAll('#view-employee .sub').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.remove('hidden');
   el.classList.add('active');
+  if(id==='ess-payslips' && typeof myPayRender==='function') myPayRender();
 }
 
 function switchAdmin(id,el){
@@ -1057,6 +1558,18 @@ function switchAdmin(id,el){
     sub.classList.add('hidden');
     document.getElementById('adm-schedules').classList.remove('hidden');
     admSchedShowList();
+  } else if(id==='adm-payroll'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-payroll').classList.remove('hidden');
+    if(typeof prInit==='function') prInit();
+  } else if(id==='adm-encode-dtr'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-encode-dtr').classList.remove('hidden');
+    if(typeof dtrInit==='function') dtrInit();
+  } else if(id==='adm-dtr-inbox'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-dtr-inbox').classList.remove('hidden');
+    if(typeof dtiInit==='function') dtiInit();
   } else {
     sub.classList.add('hidden');
     document.getElementById(id).classList.remove('hidden');
@@ -1928,6 +2441,729 @@ document.addEventListener('DOMContentLoaded',function(){attFpRenderGrid();render
 
 
 
+</script>
+
+<script>
+/* ============== DTR ENCODE + INBOX ============== */
+const DTR_EMPS = [
+  {id:'EMP-0066', name:'Pedro Reyes', role:'Area Merchandiser', status:'draft'},
+  {id:'EMP-0071', name:'Maria Lopez', role:'Field IT Tech', status:'encoded'},
+  {id:'EMP-0078', name:'Jose Cruz', role:'Roving Supervisor', status:'draft'},
+  {id:'EMP-0082', name:'Carla Mendoza', role:'Brand Promo Lead', status:'todo'},
+  {id:'EMP-0089', name:'Ramon Aquino', role:'Area Auditor', status:'todo'},
+];
+const DTR_DAYS = ['May 1','May 2','May 3','May 4','May 5','May 6','May 7','May 8','May 9','May 10','May 11','May 12','May 13','May 14','May 15'];
+const DTR_DOW = ['Fri','Sat','Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+const DTR_SEED = {
+  'EMP-0066': [
+    {i:'08:02', b:'1.0', o:'17:30', loc:'Atrium', r:''},
+    {i:'08:00', b:'1.0', o:'17:00', loc:'Festive Walk', r:''},
+    {}, {},
+    {i:'07:55', b:'1.0', o:'18:15', loc:'Robinsons', r:'OT 1h'},
+    {i:'08:10', b:'1.0', o:'17:05', loc:'Atrium', r:''},
+    {i:'08:00', b:'1.0', o:'17:00', loc:'Atrium', r:''},
+    {}, {},
+    {i:'08:05', b:'1.0', o:'17:30', loc:'SM City', r:''},
+    {i:'08:00', b:'1.0', o:'18:00', loc:'SM City', r:'OT 1h'},
+    {i:'08:00', b:'1.0', o:'17:00', loc:'Festive Walk', r:''},
+    {i:'08:15', b:'1.0', o:'17:30', loc:'Atrium', r:'OT 0.5h'},
+    {i:'08:00', b:'1.0', o:'17:00', loc:'Atrium', r:''},
+    {}
+  ],
+};
+let dtrCurrent = 'EMP-0066';
+let dtrData = {};
+
+function dtrInit(){
+  if(Object.keys(dtrData).length===0){
+    DTR_EMPS.forEach(e=>{
+      dtrData[e.id] = (DTR_SEED[e.id] || DTR_DAYS.map(()=>({}))).map(r=>({...r}));
+    });
+  }
+  dtrRenderList();
+  dtrRenderGrid();
+}
+
+function dtrRenderList(){
+  const list = document.getElementById('dtr-emp-list');
+  let done=0;
+  list.innerHTML = DTR_EMPS.map(e=>{
+    if(e.status==='encoded') done++;
+    const active = e.id===dtrCurrent;
+    const dot = e.status==='encoded' ? '<span style="width:7px;height:7px;border-radius:50%;background:#2e7d32;"></span>'
+              : e.status==='draft' ? '<span style="width:7px;height:7px;border-radius:50%;background:#e65100;"></span>'
+              : '<span style="width:7px;height:7px;border-radius:50%;background:#ccc;"></span>';
+    return `<div onclick="dtrSelect('${e.id}')" style="padding:10px 16px;border-bottom:1px solid #f7f7f7;cursor:pointer;display:flex;align-items:center;gap:10px;${active?'background:#fdecea;border-left:3px solid #c0392b;':'border-left:3px solid transparent;'}">
+      <div style="width:28px;height:28px;border-radius:50%;background:${active?'#c0392b':'#e8e8e8'};color:${active?'white':'#888'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">${e.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:${active?'#c0392b':'#1a1a1a'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
+        <div style="font-size:10px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.role}</div>
+      </div>
+      ${dot}
+    </div>`;
+  }).join('');
+  document.getElementById('dtr-stat-done').textContent = done;
+  document.getElementById('dtr-stat-total').textContent = DTR_EMPS.length;
+  document.getElementById('dtr-stat-total2').textContent = DTR_EMPS.length;
+}
+
+function dtrSelect(id){ dtrCurrent=id; dtrRenderList(); dtrRenderGrid(); }
+
+function dtrRenderGrid(){
+  const emp = DTR_EMPS.find(e=>e.id===dtrCurrent);
+  document.getElementById('dtr-cur-name').textContent = emp.name;
+  document.getElementById('dtr-cur-role').textContent = `${emp.role} · Roving · ${emp.id}`;
+  const st = document.getElementById('dtr-cur-status');
+  st.className = 'pill ' + (emp.status==='encoded'?'pg':emp.status==='draft'?'pa':'pb');
+  st.textContent = emp.status==='encoded'?'Encoded ✓':emp.status==='draft'?'Draft':'Not started';
+
+  const rows = dtrData[dtrCurrent] || DTR_DAYS.map(()=>({}));
+  const body = document.getElementById('dtr-grid-body');
+  body.innerHTML = rows.map((r,i)=>{
+    const hrs = dtrCalcHrs(r);
+    const ot = hrs>8 ? (hrs-8).toFixed(1) : '';
+    const isWk = DTR_DOW[i]==='Sat'||DTR_DOW[i]==='Sun';
+    return `<tr style="${isWk?'background:#fafafa;':''}">
+      <td style="padding:6px 10px;font-size:12px;color:#1a1a1a;font-weight:500;">${DTR_DAYS[i]}</td>
+      <td style="padding:6px 10px;font-size:11px;color:${isWk?'#c62828':'#aaa'};">${DTR_DOW[i]}</td>
+      <td style="padding:4px 6px;"><input value="${r.i||''}" placeholder="—" oninput="dtrEdit(${i},'i',this.value)" style="width:64px;border:1px solid transparent;border-radius:4px;padding:5px 6px;font-size:12px;text-align:center;background:transparent;outline:none;" onfocus="this.style.border='1px solid #c0392b';this.style.background='#fffefa';" onblur="this.style.border='1px solid transparent';this.style.background='transparent';"/></td>
+      <td style="padding:4px 6px;"><input value="${r.b||''}" placeholder="—" oninput="dtrEdit(${i},'b',this.value)" style="width:46px;border:1px solid transparent;border-radius:4px;padding:5px 6px;font-size:12px;text-align:center;background:transparent;outline:none;" onfocus="this.style.border='1px solid #c0392b';this.style.background='#fffefa';" onblur="this.style.border='1px solid transparent';this.style.background='transparent';"/></td>
+      <td style="padding:4px 6px;"><input value="${r.o||''}" placeholder="—" oninput="dtrEdit(${i},'o',this.value)" style="width:64px;border:1px solid transparent;border-radius:4px;padding:5px 6px;font-size:12px;text-align:center;background:transparent;outline:none;" onfocus="this.style.border='1px solid #c0392b';this.style.background='#fffefa';" onblur="this.style.border='1px solid transparent';this.style.background='transparent';"/></td>
+      <td style="padding:4px 6px;"><input value="${r.loc||''}" placeholder="—" oninput="dtrEdit(${i},'loc',this.value)" style="width:120px;border:1px solid transparent;border-radius:4px;padding:5px 6px;font-size:12px;background:transparent;outline:none;" onfocus="this.style.border='1px solid #c0392b';this.style.background='#fffefa';" onblur="this.style.border='1px solid transparent';this.style.background='transparent';"/></td>
+      <td style="padding:6px 10px;text-align:right;font-size:12px;color:${hrs?'#1a1a1a':'#ccc'};font-weight:${hrs?'600':'400'};">${hrs?hrs.toFixed(1):'—'}</td>
+      <td style="padding:6px 10px;text-align:right;font-size:12px;color:${ot?'#e65100':'#ccc'};font-weight:${ot?'600':'400'};">${ot||'—'}</td>
+      <td style="padding:4px 6px;"><input value="${r.r||''}" placeholder="—" oninput="dtrEdit(${i},'r',this.value)" style="width:130px;border:1px solid transparent;border-radius:4px;padding:5px 6px;font-size:12px;background:transparent;outline:none;color:#888;" onfocus="this.style.border='1px solid #c0392b';this.style.background='#fffefa';" onblur="this.style.border='1px solid transparent';this.style.background='transparent';"/></td>
+    </tr>`;
+  }).join('');
+  dtrUpdateTotals();
+}
+
+function dtrCalcHrs(r){
+  if(!r.i||!r.o) return 0;
+  const ti = dtrTM(r.i), to = dtrTM(r.o);
+  if(ti==null||to==null) return 0;
+  const br = parseFloat(r.b)||0;
+  const h = (to-ti)/60 - br;
+  return Math.max(0,h);
+}
+function dtrTM(s){ const m=s.match(/(\d{1,2}):(\d{2})/); return m? +m[1]*60 + +m[2] : null; }
+
+function dtrEdit(i,k,v){
+  if(!dtrData[dtrCurrent]) dtrData[dtrCurrent]=DTR_DAYS.map(()=>({}));
+  dtrData[dtrCurrent][i][k]=v;
+  const emp = DTR_EMPS.find(e=>e.id===dtrCurrent);
+  if(emp.status==='todo'){ emp.status='draft'; dtrRenderList(); }
+  dtrUpdateTotals();
+  // refresh just hrs/ot cells lazily by re-rendering grid
+  const row = dtrData[dtrCurrent][i];
+  const tr = document.querySelectorAll('#dtr-grid-body tr')[i];
+  if(tr){
+    const hrs = dtrCalcHrs(row);
+    const ot = hrs>8?(hrs-8).toFixed(1):'';
+    tr.children[6].textContent = hrs?hrs.toFixed(1):'—';
+    tr.children[6].style.color = hrs?'#1a1a1a':'#ccc';
+    tr.children[7].textContent = ot||'—';
+    tr.children[7].style.color = ot?'#e65100':'#ccc';
+  }
+}
+
+function dtrUpdateTotals(){
+  const rows = dtrData[dtrCurrent]||[];
+  let hrs=0, ot=0, days=0;
+  rows.forEach(r=>{ const h=dtrCalcHrs(r); if(h>0){days++; hrs+=Math.min(h,8); ot+=Math.max(0,h-8);}});
+  document.getElementById('dtr-tot-hrs').textContent = hrs.toFixed(1);
+  document.getElementById('dtr-tot-ot').textContent = ot.toFixed(1);
+  document.getElementById('dtr-tot-days').textContent = days;
+}
+
+function dtrMarkEncoded(){
+  const emp = DTR_EMPS.find(e=>e.id===dtrCurrent);
+  emp.status = emp.status==='encoded'?'draft':'encoded';
+  dtrRenderList(); dtrRenderGrid();
+}
+
+function dtrSubmitBatch(){
+  const done = DTR_EMPS.filter(e=>e.status==='encoded').length;
+  if(done<DTR_EMPS.length){
+    if(!confirm(`Only ${done} of ${DTR_EMPS.length} marked as encoded. Submit anyway?`)) return;
+  }
+  alert(`Batch submitted to HR (${done} DTRs). HR will see it in DTR Inbox.`);
+}
+
+function dtrOpenPaste(){ document.getElementById('dtr-paste-modal').classList.remove('hidden'); }
+function dtrClosePaste(){ document.getElementById('dtr-paste-modal').classList.add('hidden'); document.getElementById('dtr-paste-area').value=''; document.getElementById('dtr-paste-preview').textContent='No rows detected yet.'; }
+function dtrParsePaste(){
+  const text = document.getElementById('dtr-paste-area').value.trim();
+  if(!text){ document.getElementById('dtr-paste-preview').textContent='No rows detected yet.'; return; }
+  const lines = text.split(/\n/).filter(l=>l.trim());
+  document.getElementById('dtr-paste-preview').innerHTML = `<span style="color:#2e7d32;font-weight:600;">${lines.length} row${lines.length>1?'s':''} detected</span> · columns: Date · Time in · Break · Time out · Location`;
+}
+function dtrApplyPaste(){
+  const text = document.getElementById('dtr-paste-area').value.trim();
+  if(!text){ dtrClosePaste(); return; }
+  const lines = text.split(/\n/).filter(l=>l.trim());
+  lines.forEach((line,idx)=>{
+    if(idx>=15) return;
+    const parts = line.split(/\t|,|;|\s{2,}/).map(s=>s.trim());
+    const r = dtrData[dtrCurrent][idx] || {};
+    if(parts[1]) r.i = parts[1];
+    if(parts[2]) r.b = parts[2];
+    if(parts[3]) r.o = parts[3];
+    if(parts[4]) r.loc = parts[4];
+    dtrData[dtrCurrent][idx] = r;
+  });
+  dtrClosePaste();
+  dtrRenderGrid();
+}
+
+/* --------- HR DTR INBOX --------- */
+const DTI_BATCHES = [
+  {id:'B1', sup:'Haidee Manabat', emp:'Pedro Reyes', role:'Area Merchandiser', days:9, hrs:72, ot:3.5, sub:'May 16, 9:42 AM', status:'pending'},
+  {id:'B2', sup:'Haidee Manabat', emp:'Maria Lopez', role:'Field IT Tech', days:11, hrs:88, ot:4.0, sub:'May 16, 9:44 AM', status:'pending'},
+  {id:'B3', sup:'Roberto Cruz', emp:'Jose Cruz', role:'Roving Supervisor', days:10, hrs:80, ot:6.0, sub:'May 16, 10:15 AM', status:'pending'},
+  {id:'B4', sup:'Roberto Cruz', emp:'Carla Mendoza', role:'Brand Promo Lead', days:8, hrs:64, ot:0, sub:'May 15, 4:30 PM', status:'validated'},
+  {id:'B5', sup:'Haidee Manabat', emp:'Ramon Aquino', role:'Area Auditor', days:9, hrs:71, ot:1.5, sub:'May 15, 5:10 PM', status:'sent-back'},
+];
+
+function dtiInit(){ dtiRender(); }
+function dtiRender(){
+  const body = document.getElementById('dti-body');
+  body.innerHTML = DTI_BATCHES.map(b=>{
+    const pill = b.status==='pending'?'<span class="pill pa">Pending</span>'
+              : b.status==='validated'?'<span class="pill pg">Validated ✓</span>'
+              : '<span class="pill pr">Sent back</span>';
+    return `<tr>
+      <td>${b.sup}</td>
+      <td style="font-weight:600;color:#1a1a1a;">${b.emp}</td>
+      <td style="color:#888;font-size:12px;">${b.role}</td>
+      <td style="text-align:right;">${b.days}</td>
+      <td style="text-align:right;">${b.hrs.toFixed(1)}</td>
+      <td style="text-align:right;color:${b.ot>0?'#e65100':'#ccc'};">${b.ot.toFixed(1)}</td>
+      <td style="color:#888;font-size:12px;">${b.sub}</td>
+      <td>${pill}</td>
+      <td style="text-align:right;"><button class="action-btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="dtiOpen('${b.id}')">Review</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dti-stat-pending').textContent = DTI_BATCHES.filter(b=>b.status==='pending').length;
+  document.getElementById('dti-stat-ok').textContent = DTI_BATCHES.filter(b=>b.status==='validated').length;
+  document.getElementById('dti-stat-back').textContent = DTI_BATCHES.filter(b=>b.status==='sent-back').length;
+}
+
+let dtiOpenId = null;
+function dtiOpen(id){
+  dtiOpenId = id;
+  const b = DTI_BATCHES.find(x=>x.id===id);
+  document.getElementById('dti-d-name').textContent = b.emp;
+  document.getElementById('dti-d-meta').textContent = `Submitted by ${b.sup} · ${b.sub}`;
+  document.getElementById('dti-d-days').textContent = b.days;
+  document.getElementById('dti-d-hrs').textContent = b.hrs.toFixed(1);
+  document.getElementById('dti-d-ot').textContent = b.ot.toFixed(1);
+  const sample = (DTR_SEED[DTR_EMPS.find(e=>e.name===b.emp)?.id] || DTR_SEED['EMP-0066']);
+  document.getElementById('dti-d-rows').innerHTML = sample.map((r,i)=>{
+    if(!r.i) return '';
+    const h = dtrCalcHrs(r);
+    return `<tr><td>${DTR_DAYS[i]}</td><td>${r.i}</td><td>${r.o}</td><td>${h.toFixed(1)}</td><td style="color:#888;">${r.loc||'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('dti-drawer').classList.remove('hidden');
+}
+function dtiCloseDrawer(){ document.getElementById('dti-drawer').classList.add('hidden'); }
+function dtiValidate(){
+  const b = DTI_BATCHES.find(x=>x.id===dtiOpenId);
+  if(b){ b.status='validated'; dtiRender(); }
+  dtiCloseDrawer();
+}
+function dtiSendBack(){
+  const reason = prompt('Reason for sending back:');
+  if(!reason) return;
+  const b = DTI_BATCHES.find(x=>x.id===dtiOpenId);
+  if(b){ b.status='sent-back'; dtiRender(); }
+  dtiCloseDrawer();
+}
+function dtiInboxValidateAll(){
+  if(!confirm('Validate all pending DTRs in this batch?')) return;
+  DTI_BATCHES.forEach(b=>{ if(b.status==='pending') b.status='validated'; });
+  dtiRender();
+}
+</script>
+
+<script>
+/* ============== PAYROLL WIZARD ============== */
+const PR_EMPS = [
+  {id:'EMP-0042', name:'Juan Dela Cruz', role:'Cashier', basic:18000, dtr:null},
+  {id:'EMP-0018', name:'Haidee Manabat', role:'IT Manager', basic:65000, dtr:null},
+  {id:'EMP-0031', name:'Maria Santos', role:'Accountant', basic:42000, dtr:null},
+  {id:'EMP-0066', name:'Pedro Reyes', role:'Area Merchandiser', basic:32000, dtr:'manual'},
+  {id:'EMP-0071', name:'Maria Lopez', role:'Field IT Tech', basic:38000, dtr:'manual'},
+  {id:'EMP-0078', name:'Jose Cruz', role:'Roving Supervisor', basic:55000, dtr:'manual'},
+  {id:'EMP-0082', name:'Carla Mendoza', role:'Brand Promo Lead', basic:40000, dtr:'manual'},
+  {id:'EMP-0089', name:'Ramon Aquino', role:'Area Auditor', basic:48000, dtr:'manual'},
+  {id:'EMP-0095', name:'Liza Castillo', role:'Store Associate', basic:19500, dtr:null},
+  {id:'EMP-0103', name:'Andres Garcia', role:'Senior Accountant', basic:72000, dtr:null},
+  {id:'EMP-0108', name:'Bianca Tan', role:'HR Specialist', basic:38000, dtr:null},
+  {id:'EMP-0112', name:'Kevin Sy', role:'Sales Associate', basic:25000, dtr:null, comm:8400},
+  {id:'EMP-0117', name:'Trisha Yap', role:'Operations Lead', basic:58000, dtr:null},
+];
+
+/* PH statutory math */
+function prSSS(m){ const msc=Math.max(4000,Math.min(30000,Math.round(m/500)*500)); return Math.round(msc*0.05*100)/100; }
+function prPH(m){ return Math.round(Math.max(10000,Math.min(100000,m))*0.025*100)/100; }
+function prHDMF(m){ return Math.min(200,Math.round(m*0.02*100)/100); }
+function prBIR(t){
+  if(t<=10417)return 0;
+  if(t<=16666)return (t-10417)*0.15;
+  if(t<=33332)return 937.50+(t-16666)*0.20;
+  if(t<=83332)return 4270.83+(t-33332)*0.25;
+  if(t<=333332)return 16770.83+(t-83332)*0.30;
+  return 91770.83+(t-333332)*0.35;
+}
+function prComputeOne(e){
+  const basic = e.basic/2;
+  const transport = e.basic>60000?1500:e.basic>30000?1000:750;
+  const meal = e.basic>60000?1750:e.basic>30000?1250:1000;
+  const seedHash = e.id.split('').reduce((s,c)=>s+c.charCodeAt(0),0);
+  const otHours = e.dtr==='manual' ? (seedHash%4)*1.5 : (seedHash%3===0 ? (seedHash%6) : 0);
+  const hourly = e.basic/(22*8);
+  const otPay = Math.round(otHours*hourly*1.25*100)/100;
+  const commission = e.comm || 0;
+  const tardy = e.dtr==='manual' && seedHash%5===0 ? Math.round(hourly*0.5*100)/100 : 0;
+  const sss = Math.round(prSSS(e.basic)/2*100)/100;
+  const ph = Math.round(prPH(e.basic)/2*100)/100;
+  const hdmf = Math.round(prHDMF(e.basic)/2*100)/100;
+  const taxable = basic+otPay+commission-sss-ph-hdmf;
+  const wht = Math.round(prBIR(Math.max(0,taxable))*100)/100;
+  const loan = seedHash%4===0 ? Math.round((e.basic*0.05)/100)*100 : 0;
+  const gross = basic+transport+meal+otPay+commission;
+  const ded = sss+ph+hdmf+wht+loan+tardy;
+  const net = Math.round((gross-ded)*100)/100;
+  return {emp:e,basic,transport,meal,otPay,otHours,commission,tardy,sss,ph,hdmf,wht,loan,gross,ded,net,statutoryRemit:sss*3+ph*2+hdmf*2+wht};
+}
+let prResults = [];
+let prStep = 0;
+function prPhp(n){ return '₱'+Math.round(n).toLocaleString('en-PH'); }
+function prPhpShort(n){ if(n>=1e6) return '₱'+(n/1e6).toFixed(2)+'M'; if(n>=1e4) return '₱'+(n/1e3).toFixed(0)+'K'; return prPhp(n); }
+
+function prInit(){
+  prResetWizard();
+}
+function prResetWizard(){
+  prStep=0; prResults=[];
+  document.getElementById('pr-step-cutoff').classList.remove('hidden');
+  document.getElementById('pr-step-compute').classList.add('hidden');
+  document.getElementById('pr-step-review').classList.add('hidden');
+  document.getElementById('pr-step-release').classList.add('hidden');
+  document.getElementById('pr-released').classList.add('hidden');
+  document.getElementById('pr-release-card').classList.remove('hidden');
+  document.querySelectorAll('#pr-step-release > div > .card')[1] && (document.querySelectorAll('#pr-step-release > div > .card')[1].style.display='');
+  document.getElementById('pr-rel-confirm').value='';
+  document.getElementById('pr-rel-go').disabled=true;
+  prRenderStepper();
+  prRenderReadiness();
+}
+function prRenderStepper(){
+  const steps=['Cutoff','Compute','Review','Release'];
+  document.getElementById('pr-stepper').innerHTML = steps.map((s,i)=>{
+    const status = i<prStep?'done':i===prStep?'active':'';
+    const num = i<prStep?'✓':(i+1);
+    const line = i<steps.length-1?'<div class="pr-step-line"></div>':'';
+    return `<div class="pr-step ${status}"><div class="pr-step-num">${num}</div><div class="pr-step-name">${s}</div></div>${line}`;
+  }).join('');
+}
+function prRenderReadiness(){
+  const total = PR_EMPS.length;
+  const manualDtr = PR_EMPS.filter(e=>e.dtr==='manual').length;
+  const dtrValidated = manualDtr;  // Pretend all validated
+  const html = `
+    <div class="prow"><span class="pl">Total employees</span><span class="pv">${total}</span></div>
+    <div class="prow"><span class="pl">Biometric DTR</span><span class="pv g">${total-manualDtr} ✓</span></div>
+    <div class="prow"><span class="pl">Manual DTR — validated</span><span class="pv g">${dtrValidated} / ${manualDtr}</span></div>
+    <div class="prow"><span class="pl">With active loans</span><span class="pv">${PR_EMPS.filter(e=>e.id.split('').reduce((s,c)=>s+c.charCodeAt(0),0)%4===0).length}</span></div>
+    <div class="prow"><span class="pl">Pending leaves</span><span class="pv">0</span></div>`;
+  document.getElementById('pr-readiness').innerHTML = html;
+}
+
+function prGo(step){
+  prStep = step;
+  prRenderStepper();
+  document.getElementById('pr-step-cutoff').classList.toggle('hidden', step!==0);
+  document.getElementById('pr-step-compute').classList.toggle('hidden', step!==1);
+  document.getElementById('pr-step-review').classList.toggle('hidden', step!==2);
+  document.getElementById('pr-step-release').classList.toggle('hidden', step!==3);
+  if(step===1) prStartCompute();
+  if(step===2) prRenderReview();
+  if(step===3) prRenderRelease();
+}
+
+function prStartCompute(){
+  const bar = document.getElementById('pr-compute-bar');
+  const pct = document.getElementById('pr-compute-pct');
+  const count = document.getElementById('pr-compute-count');
+  const log = document.getElementById('pr-compute-log');
+  const badge = document.getElementById('pr-compute-badge');
+  const title = document.getElementById('pr-compute-title');
+  const nextBtn = document.getElementById('pr-compute-next');
+  log.innerHTML=''; prResults=[];
+  bar.style.width='0%'; pct.textContent='0%';
+  badge.className='pill pa'; badge.textContent='Running';
+  title.textContent='Computing payslips…';
+  nextBtn.disabled=true; nextBtn.textContent='Computing…';
+  document.getElementById('pr-live-count').textContent = PR_EMPS.length;
+  document.getElementById('pr-live-ot').textContent = '0';
+  document.getElementById('pr-live-loans').textContent = '0';
+  document.getElementById('pr-live-dtr').textContent = PR_EMPS.filter(e=>e.dtr==='manual').length;
+  document.getElementById('pr-live-net').textContent = '₱0';
+  const steps = [
+    {p:8,msg:'Loading employee records …'},
+    {p:18,msg:`Loaded ${PR_EMPS.length} employees`,ok:true},
+    {p:26,msg:'Pulling validated manual DTRs …'},
+    {p:34,msg:`Imported ${PR_EMPS.filter(e=>e.dtr==='manual').length} manual DTR hours`,ok:true},
+    {p:42,msg:'Computing basic pay (semi-monthly × 0.5) …'},
+    {p:50,msg:'Applying OT @ 1.25× hourly rate …'},
+    {p:58,msg:'Computing allowances (transport · meal) …'},
+    {p:66,msg:'SSS contribution per MSC bracket …'},
+    {p:72,msg:'PhilHealth premium @ 2.5% …'},
+    {p:78,msg:'Pag-IBIG @ 2.0% (cap ₱200) …'},
+    {p:86,msg:'BIR withholding (TRAIN semi-monthly) …'},
+    {p:92,msg:'Loan amortizations applied …'},
+    {p:97,msg:'Cross-checking totals against ledger …'},
+    {p:100,msg:`Computed ${PR_EMPS.length} payslips in 0.91s`,ok:true},
+  ];
+  let i=0;
+  function tick(){
+    if(i>=steps.length){
+      prResults = PR_EMPS.map(prComputeOne);
+      badge.className='pill pg'; badge.textContent='Done';
+      title.textContent='Computation complete';
+      nextBtn.disabled=false; nextBtn.textContent='Review results ›';
+      const totalNet = prResults.reduce((s,r)=>s+r.net,0);
+      document.getElementById('pr-live-net').textContent = prPhp(totalNet);
+      document.getElementById('pr-live-ot').textContent = prResults.filter(r=>r.otPay>0).length;
+      document.getElementById('pr-live-loans').textContent = prResults.filter(r=>r.loan>0).length;
+      return;
+    }
+    const s = steps[i];
+    bar.style.width=s.p+'%'; pct.textContent=s.p+'%';
+    count.textContent=`${Math.round(s.p/100*PR_EMPS.length)} / ${PR_EMPS.length} employees`;
+    const time = new Date().toLocaleTimeString('en-PH',{hour12:false});
+    log.innerHTML += `<div><span style="color:#bbb;">[${time}]</span> ${s.ok?'<span style="color:#2e7d32;">✓</span> ':''}${s.msg}</div>`;
+    log.scrollTop = log.scrollHeight;
+    i++;
+    setTimeout(tick, 180+Math.random()*150);
+  }
+  setTimeout(tick, 200);
+}
+
+function prRenderReview(){
+  const search = (document.getElementById('pr-rv-search').value||'').toLowerCase();
+  const filter = document.getElementById('pr-rv-filter').value;
+  let rows = prResults;
+  if(search) rows = rows.filter(r=>r.emp.name.toLowerCase().includes(search)||r.emp.id.toLowerCase().includes(search));
+  if(filter==='adjusted') rows = rows.filter(r=>r.adjusted);
+  if(filter==='dtr') rows = rows.filter(r=>r.emp.dtr==='manual');
+  if(filter==='ot') rows = rows.filter(r=>r.otPay>0);
+  let gross=0,ded=0,net=0,stat=0;
+  prResults.forEach(r=>{gross+=r.gross;ded+=r.ded;net+=r.net;stat+=r.statutoryRemit;});
+  document.getElementById('pr-rv-gross').textContent = prPhpShort(gross);
+  document.getElementById('pr-rv-deds').textContent = prPhpShort(ded);
+  document.getElementById('pr-rv-net').textContent = prPhpShort(net);
+  document.getElementById('pr-rv-stat').textContent = prPhpShort(stat);
+  document.getElementById('pr-rv-count').textContent = `${rows.length} of ${prResults.length} employees`;
+  document.getElementById('pr-rv-body').innerHTML = rows.map((r,idx)=>{
+    const source = r.emp.dtr==='manual'?'<span class="pill pb">Manual DTR</span>':'<span class="pill pg">Biometric</span>';
+    const otCell = r.otPay>0?`<span style="color:#e65100;font-weight:600;">${prPhp(r.otPay+r.transport+r.meal)}</span>`:prPhp(r.transport+r.meal);
+    const adjBadge = r.adjusted?' <span class="pill pa" style="font-size:10px;">adjusted</span>':'';
+    return `<tr>
+      <td><div style="font-weight:600;color:#1a1a1a;">${r.emp.name}${adjBadge}</div><div style="font-size:11px;color:#aaa;">${r.emp.role} · ${r.emp.id}</div></td>
+      <td style="text-align:right;">${prPhp(r.basic)}</td>
+      <td style="text-align:right;">${otCell}</td>
+      <td style="text-align:right;">${prPhp(r.sss+r.ph+r.hdmf+r.wht)}</td>
+      <td style="text-align:right;color:${r.loan>0?'#c62828':'#ccc'};">${r.loan>0?prPhp(r.loan):'—'}</td>
+      <td style="text-align:right;font-weight:700;color:#2e7d32;">${prPhp(r.net)}</td>
+      <td>${source}</td>
+      <td style="text-align:right;"><button class="action-btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="event.stopPropagation();prOpenPayslip(${prResults.indexOf(r)})">Adjust</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;padding:32px;color:#aaa;">No employees match.</td></tr>';
+  // Make whole row clickable
+  document.querySelectorAll('#pr-rv-body tr').forEach((tr,i)=>{
+    if(rows[i]){ tr.style.cursor='pointer'; tr.addEventListener('click',()=>prOpenPayslip(prResults.indexOf(rows[i]))); }
+  });
+}
+
+/* Adjustable payslip drawer */
+let prCurIdx = -1;
+let prDraft = null;
+const PR_EARN_FIELDS = [
+  {k:'basic', label:'Basic pay'},
+  {k:'transport', label:'Transport allowance'},
+  {k:'meal', label:'Meal allowance'},
+  {k:'otPay', label:'Overtime pay'},
+  {k:'commission', label:'Commission'},
+];
+const PR_DED_FIELDS = [
+  {k:'sss', label:'SSS contribution'},
+  {k:'ph', label:'PhilHealth premium'},
+  {k:'hdmf', label:'Pag-IBIG contribution'},
+  {k:'wht', label:'Withholding tax (BIR)'},
+  {k:'loan', label:'Loan amortization'},
+  {k:'tardy', label:'Tardiness'},
+];
+function prOpenPayslip(idx){
+  prCurIdx = idx;
+  const r = prResults[idx];
+  prDraft = {};
+  ['basic','transport','meal','otPay','commission','sss','ph','hdmf','wht','loan','tardy'].forEach(k=>prDraft[k]=r[k]||0);
+  document.getElementById('pr-pd-name').textContent = r.emp.name;
+  document.getElementById('pr-pd-meta').textContent = `${r.emp.role} · ${r.emp.id} · ${r.emp.dtr==='manual'?'Manual DTR':'Biometric'} · ${document.getElementById('pr-period').value}`;
+  document.getElementById('pr-pd-adj').classList.toggle('hidden', !r.adjusted);
+  document.getElementById('pr-pd-note').value = r.adjNote || '';
+  document.getElementById('pr-pd-reset').style.display = r.adjusted?'inline-block':'none';
+  document.getElementById('pr-pd-earn').innerHTML = PR_EARN_FIELDS.map(f=>prDrawerRow(f,prDraft[f.k])).join('');
+  document.getElementById('pr-pd-deds').innerHTML = PR_DED_FIELDS.map(f=>prDrawerRow(f,prDraft[f.k],true)).join('');
+  prRecalcDraft();
+  document.getElementById('pr-payslip-drawer').classList.remove('hidden');
+}
+function prDrawerRow(f, val, isDed){
+  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px dashed #f0f0f0;">
+    <span style="font-size:12.5px;color:#666;">${f.label}</span>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <span style="font-size:11px;color:#bbb;">₱</span>
+      <input type="number" step="0.01" value="${val}" oninput="prDraftEdit('${f.k}',this.value)" style="width:100px;padding:5px 8px;border:1px solid #e8e8e8;border-radius:5px;font-size:12.5px;text-align:right;outline:none;font-family:'Courier New',monospace;${isDed?'color:#c62828;':''}" onfocus="this.style.borderColor='#c0392b';this.style.background='#fffefa';" onblur="this.style.borderColor='#e8e8e8';this.style.background='white';"/>
+    </div>
+  </div>`;
+}
+function prDraftEdit(k,v){
+  const n = parseFloat(v);
+  prDraft[k] = isFinite(n) ? n : 0;
+  prRecalcDraft();
+}
+function prRecalcDraft(){
+  const e = ['basic','transport','meal','otPay','commission'].reduce((s,k)=>s+prDraft[k],0);
+  const d = ['sss','ph','hdmf','wht','loan','tardy'].reduce((s,k)=>s+prDraft[k],0);
+  document.getElementById('pr-pd-gross').textContent = prPhp(e);
+  document.getElementById('pr-pd-ded').textContent = prPhp(d);
+  document.getElementById('pr-pd-net').textContent = prPhp(e-d);
+}
+function prSaveAdjustment(){
+  const r = prResults[prCurIdx];
+  Object.assign(r, prDraft);
+  r.gross = ['basic','transport','meal','otPay','commission'].reduce((s,k)=>s+prDraft[k],0);
+  r.ded = ['sss','ph','hdmf','wht','loan','tardy'].reduce((s,k)=>s+prDraft[k],0);
+  r.net = r.gross - r.ded;
+  r.adjusted = true;
+  r.adjNote = document.getElementById('pr-pd-note').value;
+  prCloseDrawer();
+  prRenderReview();
+}
+function prResetPayslip(){
+  const r = prResults[prCurIdx];
+  const fresh = prComputeOne(r.emp);
+  Object.keys(r).forEach(k=>{ if(k!=='emp') delete r[k]; });
+  Object.assign(r, fresh);
+  prCloseDrawer();
+  prRenderReview();
+}
+function prCloseDrawer(){
+  document.getElementById('pr-payslip-drawer').classList.add('hidden');
+  prCurIdx=-1; prDraft=null;
+}
+
+function prRenderRelease(){
+  const totalNet = prResults.reduce((s,r)=>s+r.net,0);
+  const totalGross = prResults.reduce((s,r)=>s+r.gross,0);
+  document.getElementById('pr-rel-period').textContent = document.getElementById('pr-period').value;
+  document.getElementById('pr-rel-paydate').textContent = document.getElementById('pr-paydate').value;
+  document.getElementById('pr-rel-count').textContent = prResults.length;
+  document.getElementById('pr-rel-gross').textContent = prPhp(totalGross);
+  document.getElementById('pr-rel-net').textContent = prPhp(totalNet);
+  document.getElementById('pr-rel-r1').textContent = `${prResults.length} payslips will be generated and emailed`;
+  document.getElementById('pr-rel-r2').textContent = `Bank disbursement file (${prResults.length} accounts) will be queued`;
+}
+function prCheckRelease(){
+  const ok = document.getElementById('pr-rel-confirm').value.trim().toUpperCase()==='RELEASE';
+  document.getElementById('pr-rel-go').disabled = !ok;
+}
+function prRelease(){
+  const totalNet = prResults.reduce((s,r)=>s+r.net,0);
+  document.getElementById('pr-release-card').classList.add('hidden');
+  document.querySelectorAll('#pr-step-release > div > .card').forEach(c=>c.style.display='none');
+  document.getElementById('pr-released').classList.remove('hidden');
+  document.getElementById('pr-released-sub').textContent = `${prResults.length} payslips published · ${prPhp(totalNet)} disbursed`;
+}
+function prShowHistory(){ alert('Payroll history — 5 prior cutoffs. (Stub for now.)'); }
+</script>
+
+<script>
+/* ============== MY PAYSLIP (Employee view) ============== */
+const MY_PAY_DATA = [
+  {period:'May 1 – 15, 2026', payDate:'May 20, 2026', status:'pending', basic:9000, transport:750, meal:1000, otPay:0, comm:0, sss:450, ph:225, hdmf:100, wht:850, loan:0, tardy:0, hours:88, days:11, ot:0},
+  {period:'Apr 16 – 30, 2026', payDate:'May 5, 2026', status:'released', basic:9000, transport:750, meal:1000, otPay:281, comm:0, sss:450, ph:225, hdmf:100, wht:892, loan:0, tardy:0, hours:90, days:11, ot:1.8},
+  {period:'Apr 1 – 15, 2026', payDate:'Apr 20, 2026', status:'released', basic:9000, transport:750, meal:1000, otPay:0, comm:0, sss:450, ph:225, hdmf:100, wht:850, loan:0, tardy:62, hours:86.4, days:11, ot:0},
+  {period:'Mar 16 – 31, 2026', payDate:'Apr 5, 2026', status:'released', basic:9000, transport:750, meal:1000, otPay:469, comm:0, sss:450, ph:225, hdmf:100, wht:920, loan:0, tardy:0, hours:91, days:11, ot:3.0},
+  {period:'Mar 1 – 15, 2026', payDate:'Mar 20, 2026', status:'released', basic:9000, transport:750, meal:1000, otPay:0, comm:0, sss:450, ph:225, hdmf:100, wht:850, loan:0, tardy:0, hours:88, days:11, ot:0},
+];
+
+function myPayFmt(n){ return '₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function myPayFmtInt(n){ return '₱'+Math.round(n).toLocaleString('en-PH'); }
+
+function myPayRender(){
+  const idx = parseInt(document.getElementById('my-pay-period').value)||0;
+  const p = MY_PAY_DATA[idx];
+  const gross = p.basic + p.transport + p.meal + p.otPay + p.comm;
+  const ded = p.sss + p.ph + p.hdmf + p.wht + p.loan + p.tardy;
+  const net = gross - ded;
+
+  // Banner
+  const banner = document.getElementById('my-pay-banner');
+  const bTitle = document.getElementById('my-pay-banner-title');
+  const bSub = document.getElementById('my-pay-banner-sub');
+  if(p.status==='released'){
+    banner.style.background = '#e8f5e9'; banner.style.borderColor = '#a5d6a7';
+    banner.children[0].style.background='#2e7d32';
+    banner.children[0].textContent='✓';
+    bTitle.textContent = `Released — paid via BPI on ${p.payDate}`;
+    bSub.textContent = `Cutoff ${p.period} · Account ending in 4287`;
+    bSub.style.color = '#558b2f';
+    document.getElementById('my-pay-banner-net').style.color='#2e7d32';
+  } else {
+    banner.style.background = '#fff8e1'; banner.style.borderColor = '#ffe082';
+    banner.children[0].style.background='#e65100';
+    banner.children[0].textContent='⏱';
+    bTitle.textContent = `Pending release — pay date ${p.payDate}`;
+    bSub.textContent = `Cutoff ${p.period} · Estimated take-home (subject to HR validation)`;
+    bSub.style.color = '#e65100';
+    document.getElementById('my-pay-banner-net').style.color='#e65100';
+  }
+  document.getElementById('my-pay-banner-net').textContent = myPayFmtInt(net);
+
+  // Top stats
+  document.getElementById('my-pay-gross').textContent = myPayFmtInt(gross);
+  document.getElementById('my-pay-ded').textContent = myPayFmtInt(ded);
+  document.getElementById('my-pay-tax').textContent = myPayFmtInt(p.wht);
+  document.getElementById('my-pay-hrs').textContent = p.hours.toFixed(1);
+  document.getElementById('my-pay-hrs-sub').textContent = `${p.days} days · ${p.ot} OT${p.tardy>0?' · '+Math.round(p.tardy)+'m late':''}`;
+
+  // Earnings list (read-only)
+  const earnRows = [
+    {label:'Basic pay', val:p.basic, sub:'Semi-monthly · ₱18,000 × 0.5'},
+    {label:'Transport allowance', val:p.transport},
+    {label:'Meal allowance', val:p.meal},
+    p.otPay>0 ? {label:'Overtime pay', val:p.otPay, sub:`${p.ot} hrs × 1.25× hourly`, hl:true} : null,
+    p.comm>0 ? {label:'Commission', val:p.comm} : null,
+  ].filter(Boolean);
+  document.getElementById('my-pay-earn').innerHTML = earnRows.map(r=>myPayLine(r,false)).join('');
+  document.getElementById('my-pay-earn-total').textContent = myPayFmt(gross);
+
+  // Deductions list (read-only)
+  const dedRows = [
+    {label:'SSS contribution', val:p.sss, sub:'5% of MSC ÷ 2'},
+    {label:'PhilHealth premium', val:p.ph, sub:'2.5% ÷ 2'},
+    {label:'Pag-IBIG (HDMF)', val:p.hdmf, sub:'2% (capped ₱200)'},
+    {label:'BIR withholding tax', val:p.wht, sub:'TRAIN semi-monthly'},
+    p.loan>0 ? {label:'Loan amortization', val:p.loan} : null,
+    p.tardy>0 ? {label:'Tardiness', val:p.tardy, sub:'Hourly rate × minutes late'} : null,
+  ].filter(Boolean);
+  document.getElementById('my-pay-deds').innerHTML = dedRows.map(r=>myPayLine(r,true)).join('');
+  document.getElementById('my-pay-deds-total').textContent = '−'+myPayFmt(ded);
+
+  // Net
+  document.getElementById('my-pay-net').textContent = myPayFmt(net);
+  document.getElementById('my-pay-net-sub').textContent = p.status==='released'
+    ? `Credited to BPI ending in 4287 on ${p.payDate}`
+    : `Will be credited to BPI ending in 4287 on ${p.payDate}`;
+
+  // History
+  document.getElementById('my-pay-history').innerHTML = MY_PAY_DATA.map((h,i)=>{
+    const g = h.basic+h.transport+h.meal+h.otPay+h.comm;
+    const d = h.sss+h.ph+h.hdmf+h.wht+h.loan+h.tardy;
+    const n = g-d;
+    return `<tr style="cursor:pointer;" onclick="document.getElementById('my-pay-period').value=${i};myPayRender();window.scrollTo({top:0,behavior:'smooth'});">
+      <td style="font-weight:600;color:#1a1a1a;font-size:12.5px;">${h.period}</td>
+      <td style="text-align:right;font-size:12.5px;">${myPayFmtInt(g)}</td>
+      <td style="text-align:right;font-weight:700;color:#2e7d32;font-size:12.5px;">${myPayFmtInt(n)}</td>
+      <td>${h.status==='released'?'<span class="pill pg">Released</span>':'<span class="pill pa">Pending</span>'}</td>
+      <td style="text-align:right;font-size:11px;color:#c0392b;">View ›</td>
+    </tr>`;
+  }).join('');
+}
+
+function myPayLine(r, isDed){
+  const sign = isDed ? '−' : '';
+  const color = isDed ? '#c62828' : (r.hl?'#e65100':'#1a1a1a');
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 18px;border-bottom:1px dashed #f0f0f0;">
+    <div>
+      <div style="font-size:12.5px;color:#444;">${r.label}</div>
+      ${r.sub?`<div style="font-size:10.5px;color:#bbb;margin-top:2px;">${r.sub}</div>`:''}
+    </div>
+    <div style="font-family:'Courier New',monospace;font-size:13px;font-weight:600;color:${color};white-space:nowrap;">${sign}${myPayFmt(r.val)}</div>
+  </div>`;
+}
+</script>
+
+<script>
+/* ============== FIRST LOGIN EMAIL GATE ============== */
+const ATLAS_USERNAME = 'juan.delacruz@iloilosupermart.com';
+let emailGateCompleted = false;
+
+function emailGateSubmit() {
+  const input = document.getElementById('email-gate-input').value.trim().toLowerCase();
+  const error = document.getElementById('email-gate-error');
+  if (!input) {
+    error.textContent = '⚠ Please enter your email address.';
+    error.style.display = 'block';
+    return;
+  }
+  if (input !== ATLAS_USERNAME) {
+    error.textContent = '⚠ Email must match your Atlas login username: ' + ATLAS_USERNAME;
+    error.style.display = 'block';
+    document.getElementById('email-gate-input').style.borderColor = '#c0392b';
+    return;
+  }
+  // Success — show success message first
+  emailGateCompleted = true;
+
+  // Update ESS My Profile — Atlas Email field
+  const essEmail = document.getElementById('ess-profile-email');
+  if (essEmail) {
+    essEmail.textContent = ATLAS_USERNAME;
+    essEmail.style.color = '#1a1a1a';
+  }
+
+  // Update Admin > Employees row for EMP-0042 (Juan)
+  const admEmail = document.getElementById('adm-emp-email-0042');
+  if (admEmail) {
+    admEmail.textContent = ATLAS_USERNAME;
+    admEmail.style.color = '#1a1a1a';
+  }
+
+  // Show success state
+  document.getElementById('email-gate-body').style.display = 'none';
+  document.getElementById('email-gate-header').style.display = 'none';
+  document.getElementById('email-gate-success').style.display = 'block';
+}
+
+function emailGateContinue() {
+  document.getElementById('email-gate-overlay').style.display = 'none';
+}
+
+function emailGateClearError() {
+  document.getElementById('email-gate-error').style.display = 'none';
+  document.getElementById('email-gate-input').style.borderColor = '#e0e0e0';
+}
+
+function emailGateReset() {
+  emailGateCompleted = false;
+  document.getElementById('email-gate-input').value = '';
+  emailGateClearError();
+  document.getElementById('email-gate-overlay').style.display = 'flex';
+  document.getElementById('email-gate-header').style.display = 'block';
+  document.getElementById('email-gate-body').style.display = 'block';
+  document.getElementById('email-gate-success').style.display = 'none';
+
+  // Reset email fields
+  const essEmail = document.getElementById('ess-profile-email');
+  if (essEmail) { essEmail.textContent = '—'; essEmail.style.color = '#c0392b'; }
+  const admEmail = document.getElementById('adm-emp-email-0042');
+  if (admEmail) { admEmail.textContent = '—'; admEmail.style.color = '#aaa'; }
+}
 </script>
 
 </body>
