@@ -245,7 +245,7 @@ tr:last-child td { border-bottom: none; }
         <div class="sub" onclick="switchEss('ess-leave',this)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>My Work Arrangement</div>
         <div class="sub" onclick="switchEss('ess-payslips',this)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="9" x2="9" y2="9" stroke="currentColor" stroke-width="1.2"/></svg>My Payslips</div>
         <div class="sub" onclick="switchEss('ess-attendance',this);renderAttTable();"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><line x1="5" y1="1.5" x2="5" y2="4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="1.5" x2="11" y2="4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>My Attendance</div>
-        <div class="sub" onclick="switchEss('ess-loans',this)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 13V7M8 13V3M13 13V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>My Loans</div>
+        <div class="sub" onclick="switchEss('ess-loans',this);essRenderLoans();"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 13V7M8 13V3M13 13V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>My Loans</div>
         <div class="sub" onclick="switchEss('ess-schedule',this)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><line x1="5" y1="1.5" x2="5" y2="4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="11" y1="1.5" x2="11" y2="4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>My Schedule</div>
       </div>
       <div class="content">
@@ -618,25 +618,81 @@ tr:last-child td { border-bottom: none; }
 
         </div>
         <div id="ess-loans" class="hidden">
-          <div class="page-title">My Loans</div><div class="page-sub">Your active and previous loan records.</div>
-          <div class="two-col">
-            <div class="card">
-              <div class="card-hdr"><div class="card-ttl">Active Loan</div><span class="pill pa">Active</span></div>
-              <div class="prow"><span class="pl">Loan Type</span><span class="pv">SSS Salary Loan</span></div>
-              <div class="prow"><span class="pl">Original Amount</span><span class="pv">₱14,000</span></div>
-              <div class="prow"><span class="pl">Amount Paid</span><span class="pv g">₱9,000</span></div>
-              <div class="prow"><span class="pl">Balance</span><span class="pv r">₱5,000</span></div>
-              <div class="prow"><span class="pl">Monthly Deduction</span><span class="pv">₱500 / month</span></div>
-              <div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:4px;"><span>Repayment Progress</span><span style="color:#c0392b;font-weight:700;">64%</span></div><div class="loan-bar-wrap"><div class="loan-bar" style="width:64%;"></div></div></div>
+
+          <!-- My Loans List -->
+          <div id="ess-loans-list">
+            <div class="top-actions">
+              <div><div class="page-title">My Loans</div><div class="page-sub">Your active and previous loan records.</div></div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">
+              <div class="stat"><div class="stat-label">Active Loans</div><div class="stat-val" id="ess-loan-stat-active">0</div><div class="stat-icon">💳</div></div>
+              <div class="stat"><div class="stat-label">Total Outstanding</div><div class="stat-val" style="font-size:18px;" id="ess-loan-stat-outstanding">₱0.00</div><div class="stat-icon">💰</div></div>
+              <div class="stat"><div class="stat-label">Fully Paid</div><div class="stat-val" id="ess-loan-stat-paid">0</div><div class="stat-icon">✅</div></div>
+            </div>
+
+            <!-- Filter -->
+            <div class="card" style="padding:12px 18px;margin-bottom:14px;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <select id="ess-loan-filter-status" onchange="essRenderLoans()" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;color:#555;outline:none;">
+                  <option value="">All</option>
+                  <option value="Active">Active</option>
+                  <option value="Fully Paid">Fully Paid</option>
+                </select>
+                <span style="margin-left:auto;font-size:11px;color:#bbb;" id="ess-loan-count"></span>
+              </div>
+            </div>
+
+            <!-- Loan Cards -->
+            <div id="ess-loans-cards"></div>
+          </div>
+
+          <!-- My Loan Detail -->
+          <div id="ess-loans-detail" class="hidden">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+              <button onclick="essCloseLoanDetail()" style="background:none;border:none;cursor:pointer;font-size:13px;color:#c0392b;font-weight:600;padding:0;">← Back to My Loans</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl" id="ess-ld-type">—</div><span id="ess-ld-badge" class="pill pg">Active</span></div>
+                <div class="prow"><span class="pl">Loan Amount</span><span class="pv" id="ess-ld-amount">—</span></div>
+                <div class="prow"><span class="pl">Balance</span><span class="pv r" id="ess-ld-balance">—</span></div>
+                <div class="prow"><span class="pl">Deduction / Cutoff</span><span class="pv" id="ess-ld-deduction">—</span></div>
+                <div class="prow"><span class="pl">Start Date</span><span class="pv" id="ess-ld-start">—</span></div>
+                <div class="prow"><span class="pl">End Date</span><span class="pv" id="ess-ld-end">—</span></div>
+                <div class="prow" id="ess-ld-remarks-row"><span class="pl">Remarks</span><span class="pv" id="ess-ld-remarks" style="font-style:italic;color:#aaa;">—</span></div>
+              </div>
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Repayment Progress</div></div>
+                <div style="margin-bottom:6px;">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:6px;">
+                    <span>Paid</span><span id="ess-ld-pct" style="color:#c0392b;font-weight:700;">0%</span>
+                  </div>
+                  <div class="loan-bar-wrap"><div class="loan-bar" id="ess-ld-bar" style="width:0%;"></div></div>
+                </div>
+                <div class="prow"><span class="pl">Total Paid</span><span class="pv g" id="ess-ld-paid">—</span></div>
+                <div class="prow"><span class="pl">Remaining</span><span class="pv r" id="ess-ld-remaining">—</span></div>
+                <div class="prow"><span class="pl">Est. Completion</span><span class="pv" id="ess-ld-est">—</span></div>
+              </div>
             </div>
             <div class="card">
-              <div class="card-hdr"><div class="card-ttl">Loan History</div></div>
-              <table><thead><tr><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody>
-                <tr><td>SSS Salary Loan</td><td>₱14,000</td><td>Jan 2025</td><td><span class="pill pa">Active</span></td></tr>
-                <tr><td>Pag-IBIG MP2</td><td>₱10,000</td><td>Jun 2024</td><td><span class="pill pg">Paid</span></td></tr>
-              </tbody></table>
+              <div class="card-hdr"><div class="card-ttl">Payment History</div></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cutoff / Date</th>
+                    <th>Amount Deducted</th>
+                    <th>Balance After</th>
+                    <th>Source</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="ess-ld-history"></tbody>
+              </table>
             </div>
           </div>
+
         </div>
         <div id="ess-profile" class="hidden">
           <div class="page-title">My Profile</div>
@@ -772,14 +828,14 @@ tr:last-child td { border-bottom: none; }
       <div class="tab-nav">
         <div class="t active" onclick="switchAdmin('adm-dashboard',this)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>Dashboard</div>
         <div class="t" onclick="switchAdmin('adm-employees',this)">Employees</div>
-        <div class="t">Work Arrangements</div>
+        <div class="t" onclick="switchAdmin('adm-wa',this)">Work Arrangements</div>
         <div class="t" onclick="switchAdmin('adm-payroll',this)">Payroll</div>
         <div class="t" onclick="switchAdmin('adm-attendance',this)">Attendance</div>
         <div class="t" onclick="switchAdmin('adm-encode-dtr',this)" style="color:#c0392b;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Encode DTR</div>
         <div class="t" onclick="switchAdmin('adm-dtr-inbox',this)" style="color:#c0392b;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 9l3-6h6l3 6v4a1 1 0 01-1 1H3a1 1 0 01-1-1V9z" stroke="currentColor" stroke-width="1.3"/><path d="M2 9h3l1 2h4l1-2h3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>DTR Inbox <span style="background:#c0392b;color:white;font-size:9px;padding:1px 6px;border-radius:99px;font-weight:700;margin-left:2px;">3</span></div>
         <div class="t">Payslips</div>
         <div class="t">Holidays</div>
-        <div class="t">Loans</div>
+        <div class="t" onclick="switchAdmin('adm-loans',this)">Loans</div>
         <div class="t">Branches</div>
         <div class="t" onclick="switchAdmin('adm-schedules',this)">Schedules</div>
         <div class="t">Notifications</div>
@@ -789,12 +845,24 @@ tr:last-child td { border-bottom: none; }
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           My ESS</div>
       </div>
+      <div class="submenu-bar hidden" id="adm-wa-sub">
+        <div class="sub active" onclick="switchAdmWa('adm-wa-leave',this)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Leave</div>
+        <div class="sub" onclick="switchAdmWa('adm-wa-excuse',this)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v4M8 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Excuse</div>
+        <div class="sub" onclick="switchAdmWa('adm-wa-overtime',this)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Overtime</div>
+        <div class="sub" onclick="switchAdmWa('adm-wa-holidays',this)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Holidays</div>
+        <div class="sub" onclick="switchAdmWa('adm-wa-config',this)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.5 3.5l1 1M11.5 11.5l1 1M12.5 3.5l-1 1M4.5 11.5l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Configuration</div>
+      </div>
       <div class="submenu-bar hidden" id="adm-ess-sub">
         <div class="sub active" onclick="switchAdmEss('ae-dashboard',this)">My Dashboard</div>
         <div class="sub" onclick="switchAdmEss('ae-payslips',this)">My Payslips</div>
         <div class="sub" onclick="switchAdmEss('ae-attendance',this)">My Attendance</div>
         <div class="sub" onclick="switchAdmEss('ae-leave',this)">My Work Arrangement</div>
-        <div class="sub" onclick="switchAdmEss('ae-loans',this)">My Loans</div>
+        <div class="sub" onclick="switchAdmEss('ae-loans',this);aeRenderLoans();">My Loans</div>
         <div class="sub" onclick="switchAdmEss('ae-schedule',this)">My Schedule</div>
         <div class="sub" onclick="switchAdmEss('ae-profile',this)">My Profile</div>
       </div>
@@ -1237,6 +1305,513 @@ tr:last-child td { border-bottom: none; }
           <div class="card" style="text-align:center;padding:40px;color:#ccc;">Coming Soon</div>
         </div>
 
+        <!-- ADMIN LOANS -->
+        <div id="adm-loans" class="hidden">
+          <div class="top-actions">
+            <div><div class="page-title">Loans</div><div class="page-sub">Manage employee loan records and deductions.</div></div>
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn btn-outline" onclick="openLoanSettings()">⚙ Loan Types</button>
+              <button class="action-btn btn-red" onclick="openAddLoan()">+ Add Loan</button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+            <div class="stat"><div class="stat-label">Active Loans</div><div class="stat-val" id="loan-stat-active">4</div><div class="stat-icon">💳</div></div>
+            <div class="stat"><div class="stat-label">Total Outstanding</div><div class="stat-val" style="font-size:18px;" id="loan-stat-outstanding">₱38,500</div><div class="stat-icon">💰</div></div>
+            <div class="stat"><div class="stat-label">Deductions This Cutoff</div><div class="stat-val" style="font-size:18px;" id="loan-stat-cutoff">₱3,200</div><div class="stat-icon">📋</div></div>
+            <div class="stat"><div class="stat-label">Fully Paid</div><div class="stat-val" id="loan-stat-paid">2</div><div class="stat-icon">✅</div></div>
+          </div>
+
+          <!-- Filters -->
+          <div class="card" style="padding:14px 18px;margin-bottom:14px;">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <input id="loan-search" type="text" placeholder="Search employee..." oninput="renderLoansTable()" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;width:220px;outline:none;">
+              <select id="loan-filter-type" onchange="renderLoansTable()" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;color:#555;outline:none;">
+                <option value="">All Loan Types</option>
+                <option>SSS Loan</option>
+                <option>Pag-IBIG Loan</option>
+                <option>Company Loan</option>
+                <option>Emergency Loan</option>
+              </select>
+              <select id="loan-filter-status" onchange="renderLoansTable()" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;color:#555;outline:none;">
+                <option value="Active">Active</option>
+                <option value="Fully Paid">Fully Paid</option>
+                <option value="">All</option>
+              </select>
+              <span style="margin-left:auto;font-size:11px;color:#bbb;" id="loan-count">Showing 4 loans</span>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card" style="padding:0;overflow:hidden;">
+            <table id="loans-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Loan Type</th>
+                  <th>Loan Amount</th>
+                  <th>Balance</th>
+                  <th>Deduction / Cutoff</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loans-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- LOAN DETAIL VIEW -->
+        <div id="adm-loan-detail" class="hidden">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <button onclick="closeLoanDetail()" style="background:none;border:none;cursor:pointer;font-size:13px;color:#c0392b;font-weight:600;padding:0;">← Back to Loans</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl" id="ld-name">Juan Dela Cruz</div><span id="ld-status-badge" class="pill pg">Active</span></div>
+              <div class="prow"><span class="pl">Loan Type</span><span class="pv" id="ld-type">—</span></div>
+              <div class="prow"><span class="pl">Loan Amount</span><span class="pv" id="ld-amount">—</span></div>
+              <div class="prow"><span class="pl">Balance</span><span class="pv r" id="ld-balance">—</span></div>
+              <div class="prow"><span class="pl">Deduction / Cutoff</span><span class="pv" id="ld-deduction">—</span></div>
+              <div class="prow"><span class="pl">Start Date</span><span class="pv" id="ld-start">—</span></div>
+              <div class="prow"><span class="pl">End Date</span><span class="pv" id="ld-end">—</span></div>
+              <div class="prow" id="ld-remarks-row"><span class="pl">Remarks</span><span class="pv" id="ld-remarks" style="font-style:italic;color:#aaa;">—</span></div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">Repayment Progress</div></div>
+              <div style="margin-bottom:6px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:6px;">
+                  <span>Paid</span><span id="ld-progress-pct" style="color:#c0392b;font-weight:700;">0%</span>
+                </div>
+                <div class="loan-bar-wrap"><div class="loan-bar" id="ld-progress-bar" style="width:0%;"></div></div>
+              </div>
+              <div class="prow"><span class="pl">Total Paid</span><span class="pv g" id="ld-paid-total">—</span></div>
+              <div class="prow"><span class="pl">Remaining</span><span class="pv r" id="ld-remaining">—</span></div>
+              <div class="prow"><span class="pl">Est. Completion</span><span class="pv" id="ld-est-completion">—</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-ttl">Payment History</div>
+              <button class="action-btn btn-outline" style="font-size:11px;padding:5px 12px;" onclick="openManualPayment()">+ Manual Payment</button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cutoff / Date</th>
+                  <th>Amount Deducted</th>
+                  <th>Balance After</th>
+                  <th>Source</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="ld-history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADD LOAN MODAL -->
+        <div id="loan-add-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center;">
+          <div style="background:white;border-radius:12px;width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+            <div style="padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:16px;font-weight:700;">Add Loan</div>
+              <span onclick="closeAddLoan()" style="cursor:pointer;font-size:18px;color:#bbb;line-height:1;">×</span>
+            </div>
+            <div style="padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px;">
+              <div style="position:relative;">
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">EMPLOYEE</label>
+                <input id="loan-emp-input" type="text" placeholder="Search employee name..." autocomplete="off"
+                  oninput="loanEmpSearch(this.value)" onfocus="loanEmpSearch(this.value)"
+                  style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                <input type="hidden" id="loan-emp-val">
+                <div id="loan-emp-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e0e0e0;border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:9999;max-height:180px;overflow-y:auto;margin-top:2px;"></div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">LOAN TYPE</label>
+                <select id="loan-type-sel" onchange="onLoanTypeChange()" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                  <option value="">Select loan type...</option>
+                  <option data-method="Fixed" data-val="500">SSS Loan</option>
+                  <option data-method="Fixed" data-val="600">Pag-IBIG Loan</option>
+                  <option data-method="Fixed" data-val="1000">Company Loan</option>
+                  <option data-method="Percentage" data-val="5">Emergency Loan</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">LOAN AMOUNT (₱)</label>
+                <input id="loan-amount-inp" type="number" placeholder="0.00" oninput="onLoanAmountChange()" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">DEDUCTION METHOD</label>
+                  <select id="loan-ded-method" onchange="onLoanDedMethodChange()" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                    <option value="Fixed">Fixed Amount</option>
+                    <option value="Percentage">Percentage</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;" id="loan-ded-val-label">AMOUNT PER CUTOFF (₱)</label>
+                  <input id="loan-ded-val" type="number" placeholder="0.00" oninput="onLoanDedValChange()" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                </div>
+              </div>
+              <div id="loan-computed-row" style="background:#f9f9f9;border-radius:7px;padding:10px 14px;font-size:12px;color:#666;display:none;">
+                💡 Computed deduction: <strong id="loan-computed-val" style="color:#c0392b;">—</strong> per cutoff
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">START DATE</label>
+                  <input id="loan-start-inp" type="date" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">END DATE <span style="color:#ccc;font-weight:400;">(optional)</span></label>
+                  <input id="loan-end-inp" type="date" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+                </div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">REMARKS <span style="color:#ccc;font-weight:400;">(optional)</span></label>
+                <textarea id="loan-remarks-inp" rows="2" placeholder="e.g. SSS Salary Loan – approved May 2026" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;resize:none;"></textarea>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+                <button class="action-btn btn-outline" onclick="closeAddLoan()">Cancel</button>
+                <button class="action-btn btn-red" onclick="saveAddLoan()">Save Loan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MANUAL PAYMENT MODAL -->
+        <div id="loan-manual-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center;">
+          <div style="background:white;border-radius:12px;width:400px;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+            <div style="padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:16px;font-weight:700;">Add Manual Payment</div>
+              <span onclick="closeManualPayment()" style="cursor:pointer;font-size:18px;color:#bbb;line-height:1;">×</span>
+            </div>
+            <div style="padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">DATE</label>
+                <input id="mp-date" type="date" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">AMOUNT (₱)</label>
+                <input id="mp-amount" type="number" placeholder="0.00" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#888;display:block;margin-bottom:5px;">REMARKS <span style="color:#ccc;font-weight:400;">(optional)</span></label>
+                <textarea id="mp-remarks" rows="2" placeholder="e.g. Cash payment, Sep 5 2026" style="width:100%;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;resize:none;"></textarea>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+                <button class="action-btn btn-outline" onclick="closeManualPayment()">Cancel</button>
+                <button class="action-btn btn-red" onclick="saveManualPayment()">Save Payment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOAN TYPES SETTINGS MODAL -->
+        <div id="loan-types-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center;">
+          <div style="background:white;border-radius:12px;width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+            <div style="padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:16px;font-weight:700;">Loan Types</div>
+              <span onclick="closeLoanSettings()" style="cursor:pointer;font-size:18px;color:#bbb;line-height:1;">×</span>
+            </div>
+            <div style="padding:16px 24px 24px;">
+              <div style="font-size:12px;color:#aaa;margin-bottom:14px;">Configure loan types and their default deduction rules.</div>
+              <table id="loan-types-table">
+                <thead>
+                  <tr>
+                    <th>Loan Type</th>
+                    <th>Deduction Method</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="loan-types-tbody"></tbody>
+              </table>
+              <div style="margin-top:16px;border-top:1px solid #f0f0f0;padding-top:16px;">
+                <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:10px;">Add New Loan Type</div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <input id="lt-new-name" type="text" placeholder="Loan type name" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 10px;font-size:12px;width:180px;outline:none;">
+                  <select id="lt-new-method" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 10px;font-size:12px;outline:none;">
+                    <option value="Fixed">Fixed Amount</option>
+                    <option value="Percentage">Percentage</option>
+                  </select>
+                  <button class="action-btn btn-red" style="font-size:11px;padding:6px 14px;" onclick="addLoanType()">+ Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WORK ARRANGEMENTS ADMIN -->
+        <div id="adm-wa" class="hidden">
+
+          <!-- LEAVE -->
+          <div id="adm-wa-leave" class="wa-section">
+            <div class="page-title">Work Arrangement</div>
+            <!-- Filter bar -->
+            <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <input class="wa-search" type="text" placeholder="Search by employee or reason..." oninput="waFilter('wa-leave-tbody','wa-leave-count')" style="width:100%;box-sizing:border-box;border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;outline:none;color:#333;">
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Type</div>
+                <div style="position:relative;">
+                  <select class="wa-ftype" onchange="waFilter('wa-leave-tbody','wa-leave-count')" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 28px 7px 10px;font-size:12px;outline:none;color:#333;appearance:none;background:#fff;min-width:120px;">
+                    <option value="">All types</option>
+                    <option value="vacation leave">Vacation Leave</option>
+                    <option value="sick leave">Sick Leave</option>
+                    <option value="emergency leave">Emergency Leave</option>
+                  </select>
+                  <svg style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Status</div>
+                <div style="position:relative;">
+                  <select class="wa-fstatus" onchange="waFilter('wa-leave-tbody','wa-leave-count')" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 28px 7px 10px;font-size:12px;outline:none;color:#333;appearance:none;background:#fff;min-width:120px;">
+                    <option value="">All statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="declined">Declined</option>
+                  </select>
+                  <svg style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Period</div>
+                <div style="display:flex;align-items:center;gap:4px;border:1px solid #e0e0e0;border-radius:6px;padding:6px 10px;background:#fff;">
+                  <input class="wa-ffrom" type="date" onchange="waFilter('wa-leave-tbody','wa-leave-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                  <span style="color:#ccc;font-size:11px;">–</span>
+                  <input class="wa-fto" type="date" onchange="waFilter('wa-leave-tbody','wa-leave-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                </div>
+              </div>
+              <div>
+                <button onclick="waExport('wa-leave-tbody','leave_requests')" style="background:#fff;color:#333;border:1px solid #e0e0e0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="#555" stroke-width="1.5" stroke-linecap="round"/></svg>Export
+                </button>
+              </div>
+            </div>
+            <!-- Table -->
+            <div class="card" style="padding:0;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fafafa;text-align:left;">
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Type</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Employee</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Period</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Detail</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Reason</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Status</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Actions</th>
+                </tr></thead>
+                <tbody id="wa-leave-tbody">
+                  <tr style="border-bottom:1px solid #f5f5f5;" data-emp="maria santos" data-type="vacation leave" data-status="pending" data-date="2026-05-24" data-reason="family vacation">
+                    <td style="padding:10px 14px;"><span style="background:#e3f2fd;color:#1565c0;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">LEAVE</span></td>
+                    <td style="padding:10px 14px;font-weight:500;">Maria Santos</td>
+                    <td style="padding:10px 14px;color:#555;">May 26, 2026 → May 27, 2026</td>
+                    <td style="padding:10px 14px;color:#555;">Vacation Leave · 2d</td>
+                    <td style="padding:10px 14px;color:#888;">Family vacation</td>
+                    <td style="padding:10px 14px;"><span class="wa-status" style="font-size:11px;font-weight:700;color:#e65100;letter-spacing:.3px;">PENDING</span></td>
+                    <td style="padding:10px 14px;"><button onclick="waApprove(this)" style="background:#e8f5e9;color:#2e7d32;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;font-weight:600;">Approve</button><button onclick="waDecline(this)" style="background:#fdecea;color:#c0392b;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">Decline</button></td>
+                  </tr>
+                  <tr data-emp="ana reyes" data-type="sick leave" data-status="declined" data-date="2026-05-19" data-reason="fever">
+                    <td style="padding:10px 14px;"><span style="background:#e3f2fd;color:#1565c0;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">LEAVE</span></td>
+                    <td style="padding:10px 14px;font-weight:500;">Ana Reyes</td>
+                    <td style="padding:10px 14px;color:#555;">May 20, 2026</td>
+                    <td style="padding:10px 14px;color:#555;">Sick Leave · 1d</td>
+                    <td style="padding:10px 14px;color:#888;">Fever</td>
+                    <td style="padding:10px 14px;"><span class="wa-status" style="font-size:11px;font-weight:700;color:#c0392b;letter-spacing:.3px;">DECLINED</span></td>
+                    <td style="padding:10px 14px;"><span style="color:#ccc;">—</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="padding:10px 14px;font-size:12px;color:#888;border-top:1px solid #f5f5f5;" id="wa-leave-count">2 requests</div>
+            </div>
+          </div>
+
+          <!-- EXCUSE -->
+          <div id="adm-wa-excuse" class="wa-section hidden">
+            <div class="page-title">Work Arrangement</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <input class="wa-search" type="text" placeholder="Search by employee or reason..." oninput="waFilter('wa-excuse-tbody','wa-excuse-count')" style="width:100%;box-sizing:border-box;border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;outline:none;color:#333;">
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Type</div>
+                <div style="position:relative;">
+                  <select class="wa-ftype" onchange="waFilter('wa-excuse-tbody','wa-excuse-count')" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 28px 7px 10px;font-size:12px;outline:none;color:#333;appearance:none;background:#fff;min-width:120px;">
+                    <option value="">All types</option>
+                    <option value="late">Late</option>
+                    <option value="undertime">Undertime</option>
+                    <option value="absent">Absent</option>
+                  </select>
+                  <svg style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Status</div>
+                <div style="position:relative;">
+                  <select class="wa-fstatus" onchange="waFilter('wa-excuse-tbody','wa-excuse-count')" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 28px 7px 10px;font-size:12px;outline:none;color:#333;appearance:none;background:#fff;min-width:120px;">
+                    <option value="">All statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="declined">Declined</option>
+                  </select>
+                  <svg style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Period</div>
+                <div style="display:flex;align-items:center;gap:4px;border:1px solid #e0e0e0;border-radius:6px;padding:6px 10px;background:#fff;">
+                  <input class="wa-ffrom" type="date" onchange="waFilter('wa-excuse-tbody','wa-excuse-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                  <span style="color:#ccc;font-size:11px;">–</span>
+                  <input class="wa-fto" type="date" onchange="waFilter('wa-excuse-tbody','wa-excuse-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                </div>
+              </div>
+              <div>
+                <button onclick="waExport('wa-excuse-tbody','excuse_requests')" style="background:#fff;color:#333;border:1px solid #e0e0e0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="#555" stroke-width="1.5" stroke-linecap="round"/></svg>Export
+                </button>
+              </div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fafafa;text-align:left;">
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Type</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Employee</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Period</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Detail</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Reason</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Status</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Actions</th>
+                </tr></thead>
+                <tbody id="wa-excuse-tbody">
+                  <tr data-emp="juan dela cruz" data-type="late" data-status="pending" data-date="2026-05-27" data-reason="medical appointment">
+                    <td style="padding:10px 14px;"><span style="background:#f3e8ff;color:#6b21a8;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">EXCUSE</span></td>
+                    <td style="padding:10px 14px;font-weight:500;">Juan Dela Cruz</td>
+                    <td style="padding:10px 14px;color:#555;">May 27, 2026</td>
+                    <td style="padding:10px 14px;color:#555;">Late</td>
+                    <td style="padding:10px 14px;color:#888;">Medical appointment</td>
+                    <td style="padding:10px 14px;"><span class="wa-status" style="font-size:11px;font-weight:700;color:#e65100;letter-spacing:.3px;">PENDING</span></td>
+                    <td style="padding:10px 14px;"><button onclick="waApprove(this)" style="background:#e8f5e9;color:#2e7d32;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;font-weight:600;">Approve</button><button onclick="waDecline(this)" style="background:#fdecea;color:#c0392b;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">Decline</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="padding:10px 14px;font-size:12px;color:#888;border-top:1px solid #f5f5f5;" id="wa-excuse-count">1 request</div>
+            </div>
+          </div>
+
+          <!-- OVERTIME -->
+          <div id="adm-wa-overtime" class="wa-section hidden">
+            <div class="page-title">Work Arrangement</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <input class="wa-search" type="text" placeholder="Search by employee or reason..." oninput="waFilter('wa-ot-tbody','wa-ot-count')" style="width:100%;box-sizing:border-box;border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;outline:none;color:#333;">
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Status</div>
+                <div style="position:relative;">
+                  <select class="wa-fstatus" onchange="waFilter('wa-ot-tbody','wa-ot-count')" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 28px 7px 10px;font-size:12px;outline:none;color:#333;appearance:none;background:#fff;min-width:120px;">
+                    <option value="">All statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="declined">Declined</option>
+                  </select>
+                  <svg style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:500;">Period</div>
+                <div style="display:flex;align-items:center;gap:4px;border:1px solid #e0e0e0;border-radius:6px;padding:6px 10px;background:#fff;">
+                  <input class="wa-ffrom" type="date" onchange="waFilter('wa-ot-tbody','wa-ot-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                  <span style="color:#ccc;font-size:11px;">–</span>
+                  <input class="wa-fto" type="date" onchange="waFilter('wa-ot-tbody','wa-ot-count')" style="border:none;outline:none;font-size:12px;color:#333;">
+                </div>
+              </div>
+              <div>
+                <button onclick="waExport('wa-ot-tbody','overtime_requests')" style="background:#fff;color:#333;border:1px solid #e0e0e0;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="#555" stroke-width="1.5" stroke-linecap="round"/></svg>Export
+                </button>
+              </div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fafafa;text-align:left;">
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Type</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Employee</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Period</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Detail</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Reason</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Status</th>
+                  <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Actions</th>
+                </tr></thead>
+                <tbody id="wa-ot-tbody">
+                  <tr data-emp="haidee manabat" data-type="overtime" data-status="approved" data-date="2026-05-25" data-reason="inventory count">
+                    <td style="padding:10px 14px;"><span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">OT</span></td>
+                    <td style="padding:10px 14px;font-weight:500;">Haidee Manabat</td>
+                    <td style="padding:10px 14px;color:#555;">May 25, 2026 · 6:00 PM – 9:00 PM</td>
+                    <td style="padding:10px 14px;color:#555;">Overtime · 3 hrs</td>
+                    <td style="padding:10px 14px;color:#888;">Inventory count</td>
+                    <td style="padding:10px 14px;"><span class="wa-status" style="font-size:11px;font-weight:700;color:#2e7d32;letter-spacing:.3px;">APPROVED</span></td>
+                    <td style="padding:10px 14px;"><span style="color:#ccc;">—</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="padding:10px 14px;font-size:12px;color:#888;border-top:1px solid #f5f5f5;" id="wa-ot-count">1 request</div>
+            </div>
+          </div>
+
+          <!-- HOLIDAYS -->
+          <div id="adm-wa-holidays" class="hidden">
+            <div class="page-title">Holidays</div>
+            <div class="page-sub">Manage public and special holidays.</div>
+            <div class="card" style="text-align:center;padding:40px;color:#ccc;">Holidays — Coming Soon</div>
+          </div>
+
+
+          <!-- CONFIGURATION -->
+          <div id="adm-wa-config" class="hidden">
+            <div class="page-title">Configuration</div>
+            <div class="page-sub">Manage leave types, tiers, and settings.</div>
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+              <button onclick="waConfigShow('wac-leave-types',this)" class="wa-cfg-btn" style="background:#c0392b;color:white;font-weight:600;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;">Leave Types</button>
+              <button onclick="waConfigShow('wac-leave-tiers',this)" class="wa-cfg-btn" style="background:#f5f5f5;color:#555;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;">Leave Tiers</button>
+              <button onclick="waConfigShow('wac-leave-settings',this)" class="wa-cfg-btn" style="background:#f5f5f5;color:#555;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;">Leave Settings</button>
+            </div>
+            <div id="wac-leave-types">
+              <div class="card" style="padding:0;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+                  <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Leave Types</div>
+                  <button style="background:#c0392b;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">+ Add Type</button>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead><tr style="background:#fafafa;text-align:left;">
+                    <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Leave Type</th>
+                    <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Code</th>
+                    <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Default Days</th>
+                    <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;">Status</th>
+                    <th style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #f0f0f0;"></th>
+                  </tr></thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:10px 14px;">Vacation Leave</td><td style="padding:10px 14px;color:#888;">VL</td><td style="padding:10px 14px;">5</td><td style="padding:10px 14px;"><span class="pill pg">Active</span></td><td style="padding:10px 14px;"><span style="color:#c0392b;font-size:11px;cursor:pointer;font-weight:600;">Edit</span></td></tr>
+                    <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:10px 14px;">Sick Leave</td><td style="padding:10px 14px;color:#888;">SL</td><td style="padding:10px 14px;">5</td><td style="padding:10px 14px;"><span class="pill pg">Active</span></td><td style="padding:10px 14px;"><span style="color:#c0392b;font-size:11px;cursor:pointer;font-weight:600;">Edit</span></td></tr>
+                    <tr><td style="padding:10px 14px;">Emergency Leave</td><td style="padding:10px 14px;color:#888;">EL</td><td style="padding:10px 14px;">3</td><td style="padding:10px 14px;"><span class="pill pg">Active</span></td><td style="padding:10px 14px;"><span style="color:#c0392b;font-size:11px;cursor:pointer;font-weight:600;">Edit</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div id="wac-leave-tiers" class="hidden">
+              <div class="card" style="text-align:center;padding:40px;color:#ccc;">Leave Tiers — Coming Soon</div>
+            </div>
+            <div id="wac-leave-settings" class="hidden">
+              <div class="card" style="text-align:center;padding:40px;color:#ccc;">Leave Settings — Coming Soon</div>
+            </div>
+          </div>
+
+        </div>
+        <!-- END WORK ARRANGEMENTS ADMIN -->
+
         <div id="adm-settings" class="hidden">
           <div style="margin-bottom:16px;">
             <div class="page-title">Settings</div>
@@ -1534,7 +2109,71 @@ tr:last-child td { border-bottom: none; }
           <div id="ae-payslips" class="hidden"><div class="page-title">My Payslips</div><div class="page-sub">Your payslip history.</div></div>
           <div id="ae-attendance" class="hidden"><div class="page-title">My Attendance</div><div class="page-sub">Your attendance record.</div></div>
           <div id="ae-leave" class="hidden"><div class="page-title">My Work Arrangement</div><div class="page-sub">Your work arrangement requests.</div></div>
-          <div id="ae-loans" class="hidden"><div class="page-title">My Loans</div><div class="page-sub">Your loan records.</div></div>
+          <div id="ae-loans" class="hidden">
+
+          <!-- My Loans List (ESS in Admin view) -->
+          <div id="ae-loans-list">
+            <div class="top-actions">
+              <div><div class="page-title">My Loans</div><div class="page-sub">Your active and previous loan records.</div></div>
+            </div>
+            <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">
+              <div class="stat"><div class="stat-label">Active Loans</div><div class="stat-val" id="ae-loan-stat-active">0</div><div class="stat-icon">💳</div></div>
+              <div class="stat"><div class="stat-label">Total Outstanding</div><div class="stat-val" style="font-size:18px;" id="ae-loan-stat-outstanding">₱0.00</div><div class="stat-icon">💰</div></div>
+              <div class="stat"><div class="stat-label">Fully Paid</div><div class="stat-val" id="ae-loan-stat-paid">0</div><div class="stat-icon">✅</div></div>
+            </div>
+            <div class="card" style="padding:12px 18px;margin-bottom:14px;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <select id="ae-loan-filter-status" onchange="aeRenderLoans()" style="border:1px solid #e0e0e0;border-radius:6px;padding:7px 12px;font-size:12px;color:#555;outline:none;">
+                  <option value="">All</option>
+                  <option value="Active">Active</option>
+                  <option value="Fully Paid">Fully Paid</option>
+                </select>
+                <span style="margin-left:auto;font-size:11px;color:#bbb;" id="ae-loan-count"></span>
+              </div>
+            </div>
+            <div id="ae-loans-cards"></div>
+          </div>
+
+          <!-- My Loan Detail (ESS in Admin view) -->
+          <div id="ae-loans-detail" class="hidden">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+              <button onclick="aeCloseLoanDetail()" style="background:none;border:none;cursor:pointer;font-size:13px;color:#c0392b;font-weight:600;padding:0;">← Back to My Loans</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl" id="ae-ld-type">—</div><span id="ae-ld-badge" class="pill pg">Active</span></div>
+                <div class="prow"><span class="pl">Loan Amount</span><span class="pv" id="ae-ld-amount">—</span></div>
+                <div class="prow"><span class="pl">Balance</span><span class="pv r" id="ae-ld-balance">—</span></div>
+                <div class="prow"><span class="pl">Deduction / Cutoff</span><span class="pv" id="ae-ld-deduction">—</span></div>
+                <div class="prow"><span class="pl">Start Date</span><span class="pv" id="ae-ld-start">—</span></div>
+                <div class="prow"><span class="pl">End Date</span><span class="pv" id="ae-ld-end">—</span></div>
+                <div class="prow"><span class="pl">Remarks</span><span class="pv" id="ae-ld-remarks" style="font-style:italic;color:#aaa;">—</span></div>
+              </div>
+              <div class="card">
+                <div class="card-hdr"><div class="card-ttl">Repayment Progress</div></div>
+                <div style="margin-bottom:6px;">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:6px;">
+                    <span>Paid</span><span id="ae-ld-pct" style="color:#c0392b;font-weight:700;">0%</span>
+                  </div>
+                  <div class="loan-bar-wrap"><div class="loan-bar" id="ae-ld-bar" style="width:0%;"></div></div>
+                </div>
+                <div class="prow"><span class="pl">Total Paid</span><span class="pv g" id="ae-ld-paid">—</span></div>
+                <div class="prow"><span class="pl">Remaining</span><span class="pv r" id="ae-ld-remaining">—</span></div>
+                <div class="prow"><span class="pl">Est. Completion</span><span class="pv" id="ae-ld-est">—</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">Payment History</div></div>
+              <table>
+                <thead>
+                  <tr><th>Cutoff / Date</th><th>Amount Deducted</th><th>Balance After</th><th>Source</th><th>Remarks</th></tr>
+                </thead>
+                <tbody id="ae-ld-history"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
           <div id="ae-schedule" class="hidden"><div class="page-title">My Schedule</div><div class="page-sub">Your work schedule.</div></div>
           <div id="ae-profile" class="hidden"><div class="page-title">My Profile</div><div class="page-sub">Your personal information on record.</div></div>
         </div>
@@ -1546,7 +2185,7 @@ tr:last-child td { border-bottom: none; }
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const essTabs=['ess-dashboard','ess-payslips','ess-attendance','ess-leave','ess-loans','ess-schedule','ess-profile'];
-const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-encode-dtr','adm-dtr-inbox','adm-payroll','adm-reports','adm-settings','adm-ess','adm-schedules'];
+const admPages=['adm-dashboard','adm-employees','adm-attendance','adm-encode-dtr','adm-dtr-inbox','adm-payroll','adm-reports','adm-settings','adm-ess','adm-schedules','adm-wa','adm-loans','adm-loan-detail'];
 const aeTabs=['ae-dashboard','ae-payslips','ae-attendance','ae-leave','ae-loans','ae-schedule','ae-profile'];
 
 function switchEss(id,el){
@@ -1569,8 +2208,17 @@ function switchAdmin(id,el){
     document.getElementById('ae-dashboard').classList.remove('hidden');
     document.querySelectorAll('#adm-ess-sub .sub').forEach(s=>s.classList.remove('active'));
     document.querySelectorAll('#adm-ess-sub .sub')[0].classList.add('active');
+  } else if(id==='adm-wa'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-wa-sub').classList.remove('hidden');
+    document.getElementById('adm-wa').classList.remove('hidden');
+    waTabs.forEach(t=>document.getElementById(t).classList.add('hidden'));
+    document.getElementById('adm-wa-leave').classList.remove('hidden');
+    document.querySelectorAll('#adm-wa-sub .sub').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('#adm-wa-sub .sub')[0].classList.add('active');
   } else if(id==='adm-schedules'){
     sub.classList.add('hidden');
+    document.getElementById('adm-wa-sub').classList.add('hidden');
     document.getElementById('adm-schedules').classList.remove('hidden');
     admSchedShowList();
   } else if(id==='adm-payroll'){
@@ -1585,10 +2233,86 @@ function switchAdmin(id,el){
     sub.classList.add('hidden');
     document.getElementById('adm-dtr-inbox').classList.remove('hidden');
     if(typeof dtiInit==='function') dtiInit();
+  } else if(id==='adm-loans'){
+    sub.classList.add('hidden');
+    document.getElementById('adm-wa-sub').classList.add('hidden');
+    document.getElementById('adm-loans').classList.remove('hidden');
+    renderLoansTable();
   } else {
     sub.classList.add('hidden');
+    document.getElementById('adm-wa-sub').classList.add('hidden');
     document.getElementById(id).classList.remove('hidden');
   }
+}
+
+const waTabs=['adm-wa-leave','adm-wa-excuse','adm-wa-overtime','adm-wa-holidays','adm-wa-config'];
+function switchAdmWa(id,el){
+  waTabs.forEach(t=>document.getElementById(t).classList.add('hidden'));
+  document.querySelectorAll('#adm-wa-sub .sub').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.remove('hidden');
+  el.classList.add('active');
+}
+
+function waApprove(btn){
+  const row=btn.closest('tr');
+  const sc=row.querySelector('.wa-status');
+  if(sc){sc.className='wa-status';sc.style.cssText='font-size:11px;font-weight:700;color:#2e7d32;letter-spacing:.3px;';sc.textContent='APPROVED';}
+  btn.closest('td').innerHTML='<span style="color:#ccc;">—</span>';
+}
+function waDecline(btn){
+  const row=btn.closest('tr');
+  const sc=row.querySelector('.wa-status');
+  if(sc){sc.className='wa-status';sc.style.cssText='font-size:11px;font-weight:700;color:#c0392b;letter-spacing:.3px;';sc.textContent='DECLINED';}
+  btn.closest('td').innerHTML='<span style="color:#ccc;">—</span>';
+}
+
+function waFilter(tbodyId,countId){
+  const wrap=document.getElementById(tbodyId).closest('.wa-section');
+  const search=(wrap.querySelector('.wa-search')||{value:''}).value.toLowerCase();
+  const type=(wrap.querySelector('.wa-ftype')||{value:''}).value.toLowerCase();
+  const status=(wrap.querySelector('.wa-fstatus')||{value:''}).value.toLowerCase();
+  const from=(wrap.querySelector('.wa-ffrom')||{value:''}).value;
+  const to=(wrap.querySelector('.wa-fto')||{value:''}).value;
+  const rows=document.querySelectorAll('#'+tbodyId+' tr');
+  let count=0;
+  rows.forEach(r=>{
+    const emp=(r.dataset.emp||'').toLowerCase();
+    const reason=(r.dataset.reason||'').toLowerCase();
+    const rType=(r.dataset.type||'').toLowerCase();
+    const rStatus=(r.dataset.status||'').toLowerCase();
+    const rDate=r.dataset.date||'';
+    const ok=(!search||(emp+reason).includes(search))&&
+              (!type||rType===type)&&
+              (!status||rStatus===status)&&
+              (!from||rDate>=from)&&
+              (!to||rDate<=to);
+    r.style.display=ok?'':'none';
+    if(ok)count++;
+  });
+  document.getElementById(countId).textContent=count+' request'+(count!==1?'s':'');
+}
+
+function waExport(tbodyId, filename){
+  const rows=document.querySelectorAll('#'+tbodyId+' tr');
+  const thead=document.querySelector('#'+tbodyId).closest('table').querySelectorAll('th');
+  const headers=Array.from(thead).map(th=>th.innerText.trim()).filter(Boolean);
+  let csv=headers.map(h=>'"'+h+'"').join(',')+'\n';
+  rows.forEach(r=>{
+    if(r.style.display==='none') return;
+    const vals=Array.from(r.querySelectorAll('td')).map(c=>'"'+(c.innerText.trim().replace(/"/g,'""'))+'"');
+    csv+=vals.join(',')+'\n';
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename+'.csv';
+  a.click();
+}
+
+function waConfigShow(id,btn){
+  ['wac-leave-types','wac-leave-tiers','wac-leave-settings'].forEach(t=>document.getElementById(t).classList.add('hidden'));
+  document.querySelectorAll('.wa-cfg-btn').forEach(b=>{b.style.background='#f5f5f5';b.style.color='#555';b.style.fontWeight='400';});
+  document.getElementById(id).classList.remove('hidden');
+  btn.style.background='#c0392b';btn.style.color='white';btn.style.fontWeight='600';
 }
 
 function switchAdmEss(id,el){
@@ -3219,5 +3943,428 @@ function emailGateReset() {
 }
 </script>
 
+<script>
+/* ============================================================
+   LOANS MODULE
+   ============================================================ */
+let loansData = [
+  { id: 1, emp: 'Juan Dela Cruz', type: 'SSS Loan', amount: 10000, balance: 6500, method: 'Fixed', dedVal: 500, startDate: 'Jan 15, 2026', endDate: 'Jan 14, 2027', status: 'Active', remarks: 'SSS Salary Loan', history: [
+    { date: 'Jan 15, 2026', amount: 500, balanceAfter: 9500, source: 'Payroll Auto', remarks: '' },
+    { date: 'Jan 31, 2026', amount: 500, balanceAfter: 9000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Feb 15, 2026', amount: 500, balanceAfter: 8500, source: 'Payroll Auto', remarks: '' },
+    { date: 'Feb 28, 2026', amount: 500, balanceAfter: 8000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Mar 15, 2026', amount: 500, balanceAfter: 7500, source: 'Payroll Auto', remarks: '' },
+    { date: 'Mar 31, 2026', amount: 500, balanceAfter: 7000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Apr 15, 2026', amount: 500, balanceAfter: 6500, source: 'Payroll Auto', remarks: '' },
+  ]},
+  { id: 2, emp: 'Maria Santos', type: 'Pag-IBIG Loan', amount: 20000, balance: 18800, method: 'Fixed', dedVal: 600, startDate: 'Apr 1, 2026', endDate: 'Mar 31, 2028', status: 'Active', remarks: '', history: [
+    { date: 'Apr 15, 2026', amount: 600, balanceAfter: 19400, source: 'Payroll Auto', remarks: '' },
+    { date: 'Apr 30, 2026', amount: 600, balanceAfter: 18800, source: 'Payroll Auto', remarks: '' },
+  ]},
+  { id: 3, emp: 'Pedro Reyes', type: 'Company Loan', amount: 5000, balance: 2000, method: 'Fixed', dedVal: 1000, startDate: 'Feb 1, 2026', endDate: 'Jun 30, 2026', status: 'Active', remarks: 'Emergency advance', history: [
+    { date: 'Feb 15, 2026', amount: 1000, balanceAfter: 4000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Feb 28, 2026', amount: 1000, balanceAfter: 3000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Mar 15, 2026', amount: 1000, balanceAfter: 2000, source: 'Payroll Auto', remarks: '' },
+  ]},
+  { id: 4, emp: 'Maria Santos', type: 'Emergency Loan', amount: 3000, balance: 2850, method: 'Percentage', dedVal: 5, startDate: 'May 15, 2026', endDate: 'Nov 14, 2026', status: 'Active', remarks: '', history: [
+    { date: 'May 15, 2026', amount: 150, balanceAfter: 2850, source: 'Payroll Auto', remarks: '' },
+  ]},
+  { id: 5, emp: 'Juan Dela Cruz', type: 'Company Loan', amount: 3000, balance: 0, method: 'Fixed', dedVal: 1000, startDate: 'Nov 1, 2025', endDate: 'Dec 31, 2025', status: 'Fully Paid', remarks: '', history: [
+    { date: 'Nov 15, 2025', amount: 1000, balanceAfter: 2000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Nov 30, 2025', amount: 1000, balanceAfter: 1000, source: 'Payroll Auto', remarks: '' },
+    { date: 'Dec 15, 2025', amount: 1000, balanceAfter: 0, source: 'Payroll Auto', remarks: '' },
+  ]},
+  { id: 6, emp: 'Pedro Reyes', type: 'SSS Loan', amount: 8000, balance: 0, method: 'Fixed', dedVal: 500, startDate: 'Jun 1, 2025', endDate: 'Jan 31, 2026', status: 'Fully Paid', remarks: '', history: [
+    { date: 'Jun 15, 2025', amount: 500, balanceAfter: 7500, source: 'Payroll Auto', remarks: '' },
+    { date: 'Jun 30, 2025', amount: 500, balanceAfter: 7000, source: 'Payroll Auto', remarks: '' },
+  ]},
+];
+
+let loanTypes = [
+  { name: 'SSS Loan', method: 'Fixed', val: 500, active: true },
+  { name: 'Pag-IBIG Loan', method: 'Fixed', val: 600, active: true },
+  { name: 'Company Loan', method: 'Fixed', val: 1000, active: true },
+  { name: 'Emergency Loan', method: 'Percentage', val: 5, active: true },
+];
+
+let activeLoanId = null;
+
+function loanPhp(n){ return '\u20b1' + Number(n).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+const loanEmpList = ['Juan Dela Cruz','Maria Santos','Pedro Reyes'];
+
+function loanEmpSearch(q){
+  const dd = document.getElementById('loan-emp-dropdown');
+  const filtered = q.trim()==='' ? loanEmpList : loanEmpList.filter(e=>e.toLowerCase().includes(q.toLowerCase()));
+  if(!filtered.length){ dd.style.display='none'; return; }
+  dd.innerHTML = filtered.map(e=>`<div onclick="loanEmpSelect('${e}')" style="padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid #f5f5f5;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='white'">${e}</div>`).join('');
+  dd.style.display='block';
+}
+
+function loanEmpSelect(name){
+  document.getElementById('loan-emp-input').value = name;
+  document.getElementById('loan-emp-val').value = name;
+  document.getElementById('loan-emp-dropdown').style.display='none';
+}
+
+document.addEventListener('click', function(e){
+  const dd = document.getElementById('loan-emp-dropdown');
+  const inp = document.getElementById('loan-emp-input');
+  if(dd && inp && !inp.contains(e.target) && !dd.contains(e.target)){
+    dd.style.display='none';
+  }
+});
+
+function renderLoansTable(){
+  const search = (document.getElementById('loan-search')||{value:''}).value.toLowerCase();
+  const filterType = (document.getElementById('loan-filter-type')||{value:''}).value;
+  const filterStatus = (document.getElementById('loan-filter-status')||{value:'Active'}).value;
+  let filtered = loansData.filter(l => {
+    return l.emp.toLowerCase().includes(search)
+      && (!filterType || l.type===filterType)
+      && (!filterStatus || l.status===filterStatus);
+  });
+  const tbody = document.getElementById('loans-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = filtered.map(l => {
+    const dedDisplay = l.method==='Fixed' ? loanPhp(l.dedVal) : `${l.dedVal}% (${loanPhp(Math.round(l.dedVal/100*l.balance))})`;
+    const statusPill = l.status==='Active' ? `<span class="pill pg">Active</span>` : `<span class="pill pb">Fully Paid</span>`;
+    return `<tr>
+      <td style="font-weight:600;">${l.emp}</td>
+      <td>${l.type}</td>
+      <td>${loanPhp(l.amount)}</td>
+      <td style="font-weight:600;color:${l.balance>0?'#c62828':'#2e7d32'};">${loanPhp(l.balance)}</td>
+      <td>${dedDisplay}</td>
+      <td style="color:#999;">${l.startDate}</td>
+      <td style="color:#999;">${l.endDate||'—'}</td>
+      <td>${statusPill}</td>
+      <td style="text-align:right;"><button onclick="viewLoanDetail(${l.id})" style="background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;padding:4px 8px;">View →</button></td>
+    </tr>`;
+  }).join('');
+  if(!filtered.length) tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:#ccc;">No loans found.</td></tr>`;
+  const countEl=document.getElementById('loan-count'); if(countEl) countEl.textContent=`Showing ${filtered.length} loan${filtered.length!==1?'s':''}`;
+  const active=loansData.filter(l=>l.status==='Active');
+  const paid=loansData.filter(l=>l.status==='Fully Paid');
+  const outstanding=active.reduce((s,l)=>s+l.balance,0);
+  const cutoff=active.reduce((s,l)=>s+(l.method==='Fixed'?l.dedVal:Math.round(l.dedVal/100*l.balance)),0);
+  const sa=document.getElementById('loan-stat-active'); if(sa) sa.textContent=active.length;
+  const so=document.getElementById('loan-stat-outstanding'); if(so) so.textContent=loanPhp(outstanding);
+  const sc=document.getElementById('loan-stat-cutoff'); if(sc) sc.textContent=loanPhp(cutoff);
+  const sp=document.getElementById('loan-stat-paid'); if(sp) sp.textContent=paid.length;
+}
+
+function viewLoanDetail(id){
+  const l=loansData.find(x=>x.id===id); if(!l) return;
+  activeLoanId=id;
+  admPages.forEach(p=>{ const el=document.getElementById(p); if(el) el.classList.add('hidden'); });
+  document.getElementById('adm-loan-detail').classList.remove('hidden');
+  document.getElementById('ld-name').textContent=l.emp;
+  document.getElementById('ld-type').textContent=l.type;
+  document.getElementById('ld-amount').textContent=loanPhp(l.amount);
+  document.getElementById('ld-balance').textContent=loanPhp(l.balance);
+  const dedDisplay=l.method==='Fixed'?loanPhp(l.dedVal):`${l.dedVal}% (${loanPhp(Math.round(l.dedVal/100*l.amount))} / cutoff)`;
+  document.getElementById('ld-deduction').textContent=dedDisplay;
+  document.getElementById('ld-start').textContent=l.startDate;
+  document.getElementById('ld-end').textContent=l.endDate||'—';
+  document.getElementById('ld-remarks').textContent=l.remarks||'—';
+  const badge=document.getElementById('ld-status-badge');
+  badge.className='pill '+(l.status==='Active'?'pg':'pb');
+  badge.textContent=l.status;
+  const paid=l.amount-l.balance;
+  const pct=l.amount>0?Math.round(paid/l.amount*100):100;
+  document.getElementById('ld-progress-pct').textContent=pct+'%';
+  document.getElementById('ld-progress-bar').style.width=pct+'%';
+  document.getElementById('ld-paid-total').textContent=loanPhp(paid);
+  document.getElementById('ld-remaining').textContent=loanPhp(l.balance);
+  let estComp='—';
+  if(l.status==='Fully Paid'){ estComp='Completed'; }
+  else if(l.balance>0){
+    const dedPerCutoff=l.method==='Fixed'?l.dedVal:Math.round(l.dedVal/100*l.amount);
+    const cutoffsLeft=Math.ceil(l.balance/dedPerCutoff);
+    const monthsLeft=Math.ceil(cutoffsLeft/2);
+    estComp=`~${monthsLeft} month${monthsLeft!==1?'s':''}`;
+  }
+  document.getElementById('ld-est-completion').textContent=estComp;
+  const tbody=document.getElementById('ld-history-tbody');
+  tbody.innerHTML=[...l.history].reverse().map(h=>`
+    <tr>
+      <td style="color:#999;">${h.date}</td>
+      <td style="font-weight:600;">${loanPhp(h.amount)}</td>
+      <td style="color:#c62828;">${loanPhp(h.balanceAfter)}</td>
+      <td><span class="pill ${h.source==='Payroll Auto'?'pb':'pa'}" style="font-size:10px;">${h.source}</span></td>
+      <td style="color:#bbb;">${h.remarks||'—'}</td>
+    </tr>`).join('');
+  if(!l.history.length) tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:#ccc;">No payment history yet.</td></tr>`;
+}
+
+function closeLoanDetail(){
+  admPages.forEach(p=>{ const el=document.getElementById(p); if(el) el.classList.add('hidden'); });
+  document.getElementById('adm-loans').classList.remove('hidden');
+  renderLoansTable();
+  activeLoanId=null;
+}
+
+function openAddLoan(){
+  document.getElementById('loan-emp-input').value='';
+  document.getElementById('loan-emp-val').value='';
+  document.getElementById('loan-emp-dropdown').style.display='none';
+  document.getElementById('loan-type-sel').value='';
+  document.getElementById('loan-amount-inp').value='';
+  document.getElementById('loan-ded-method').value='Fixed';
+  document.getElementById('loan-ded-val').value='';
+  document.getElementById('loan-ded-val-label').textContent='AMOUNT PER CUTOFF (₱)';
+  document.getElementById('loan-computed-row').style.display='none';
+  document.getElementById('loan-start-inp').value='';
+  document.getElementById('loan-end-inp').value='';
+  document.getElementById('loan-remarks-inp').value='';
+  document.getElementById('loan-add-modal').classList.remove('hidden');
+}
+function closeAddLoan(){ document.getElementById('loan-add-modal').classList.add('hidden'); }
+
+function onLoanTypeChange(){
+  const sel=document.getElementById('loan-type-sel');
+  const opt=sel.options[sel.selectedIndex];
+  if(opt.dataset.method){
+    document.getElementById('loan-ded-method').value=opt.dataset.method;
+    onLoanDedMethodChange();
+  }
+}
+function onLoanDedMethodChange(){
+  const method=document.getElementById('loan-ded-method').value;
+  document.getElementById('loan-ded-val-label').textContent=method==='Fixed'?'AMOUNT PER CUTOFF (₱)':'PERCENTAGE (%)';
+  onLoanDedValChange();
+}
+function onLoanAmountChange(){ onLoanDedValChange(); }
+function onLoanDedValChange(){
+  const method=document.getElementById('loan-ded-method').value;
+  const val=parseFloat(document.getElementById('loan-ded-val').value)||0;
+  const amount=parseFloat(document.getElementById('loan-amount-inp').value)||0;
+  const row=document.getElementById('loan-computed-row');
+  if(method==='Percentage'&&val>0&&amount>0){
+    document.getElementById('loan-computed-val').textContent=loanPhp(Math.round(val/100*amount))+' / cutoff';
+    row.style.display='block';
+  } else { row.style.display='none'; }
+}
+
+function saveAddLoan(){
+  const emp=document.getElementById('loan-emp-val').value||document.getElementById('loan-emp-input').value;
+  const type=document.getElementById('loan-type-sel').value;
+  const amount=parseFloat(document.getElementById('loan-amount-inp').value)||0;
+  const method=document.getElementById('loan-ded-method').value;
+  const dedVal=parseFloat(document.getElementById('loan-ded-val').value)||0;
+  const startDate=document.getElementById('loan-start-inp').value;
+  const endDateRaw=document.getElementById('loan-end-inp').value;
+  const remarks=document.getElementById('loan-remarks-inp').value;
+  if(!emp||!type||!amount||!dedVal||!startDate){ alert('Please fill in all required fields.'); return; }
+  const endDate=endDateRaw?new Date(endDateRaw).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+  loansData.unshift({ id:Date.now(), emp, type, amount, balance:amount, method, dedVal,
+    startDate:new Date(startDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    endDate, status:'Active', remarks, history:[] });
+  closeAddLoan(); renderLoansTable();
+}
+
+function openManualPayment(){
+  document.getElementById('mp-date').value='';
+  document.getElementById('mp-amount').value='';
+  document.getElementById('mp-remarks').value='';
+  document.getElementById('loan-manual-modal').classList.remove('hidden');
+}
+function closeManualPayment(){ document.getElementById('loan-manual-modal').classList.add('hidden'); }
+
+function saveManualPayment(){
+  const dateVal=document.getElementById('mp-date').value;
+  const amount=parseFloat(document.getElementById('mp-amount').value)||0;
+  const remarks=document.getElementById('mp-remarks').value;
+  if(!dateVal||!amount){ alert('Please enter date and amount.'); return; }
+  if(!activeLoanId) return;
+  const l=loansData.find(x=>x.id===activeLoanId); if(!l) return;
+  const deductAmt=Math.min(amount,l.balance);
+  l.balance=Math.max(0,l.balance-deductAmt);
+  if(l.balance===0) l.status='Fully Paid';
+  l.history.push({ date:new Date(dateVal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), amount:deductAmt, balanceAfter:l.balance, source:'Manual Entry', remarks });
+  closeManualPayment(); viewLoanDetail(activeLoanId);
+}
+
+function openLoanSettings(){ renderLoanTypesTable(); document.getElementById('loan-types-modal').classList.remove('hidden'); }
+function closeLoanSettings(){ document.getElementById('loan-types-modal').classList.add('hidden'); }
+
+function renderLoanTypesTable(){
+  document.getElementById('loan-types-tbody').innerHTML=loanTypes.map((lt,i)=>`
+    <tr>
+      <td style="font-weight:600;">${lt.name}</td>
+      <td>${lt.method}</td>
+      <td><span class="pill ${lt.active?'pg':'pr'}" style="cursor:pointer;" onclick="toggleLoanType(${i})">${lt.active?'Active':'Inactive'}</span></td>
+      <td><button onclick="removeLoanType(${i})" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;" title="Remove">×</button></td>
+    </tr>`).join('');
+}
+function toggleLoanType(i){ loanTypes[i].active=!loanTypes[i].active; renderLoanTypesTable(); }
+function removeLoanType(i){ if(confirm('Remove this loan type?')){ loanTypes.splice(i,1); renderLoanTypesTable(); } }
+function addLoanType(){
+  const name=document.getElementById('lt-new-name').value.trim();
+  const method=document.getElementById('lt-new-method').value;
+  if(!name){ alert('Please enter a loan type name.'); return; }
+  loanTypes.push({name,method,active:true});
+  document.getElementById('lt-new-name').value='';
+  renderLoanTypesTable();
+}
+</script>
+
+
+<script>
+/* ============================================================
+   MY LOANS — ESS VIEW
+   ============================================================ */
+
+// Employee whose loans we show in ESS (Juan Dela Cruz = id 1 and 5)
+const ESS_EMP_NAME = 'Juan Dela Cruz';
+
+function essGetMyLoans(){
+  return loansData.filter(l => l.emp === ESS_EMP_NAME);
+}
+
+function essLoanPhp(n){ return '₱' + Number(n).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function essLoanCard(l, prefix){
+  const pct = l.amount > 0 ? Math.round((l.amount - l.balance) / l.amount * 100) : 100;
+  const dedDisplay = l.method === 'Fixed' ? essLoanPhp(l.dedVal) : `${l.dedVal}% (${essLoanPhp(Math.round(l.dedVal/100*l.balance))})`;
+  const statusPill = l.status === 'Active'
+    ? `<span class="pill pg">Active</span>`
+    : `<span class="pill pb">Fully Paid</span>`;
+  return `<div class="card" style="margin-bottom:14px;">
+    <div class="card-hdr">
+      <div class="card-ttl">${l.type}</div>
+      ${statusPill}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <div class="prow" style="padding-right:20px;"><span class="pl">Loan Amount</span><span class="pv">${essLoanPhp(l.amount)}</span></div>
+      <div class="prow" style="padding-left:20px;border-left:1px solid #f7f7f7;"><span class="pl">Balance</span><span class="pv r">${essLoanPhp(l.balance)}</span></div>
+      <div class="prow" style="padding-right:20px;"><span class="pl">Deduction / Cutoff</span><span class="pv">${dedDisplay}</span></div>
+      <div class="prow" style="padding-left:20px;border-left:1px solid #f7f7f7;"><span class="pl">Start Date</span><span class="pv">${l.startDate}</span></div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:5px;">
+        <span>Repayment Progress</span>
+        <span style="color:#c0392b;font-weight:700;">${pct}%</span>
+      </div>
+      <div class="loan-bar-wrap"><div class="loan-bar" style="width:${pct}%;"></div></div>
+    </div>
+    <div style="margin-top:12px;text-align:right;">
+      <button onclick="${prefix}ViewLoanDetail(${l.id})" style="background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;">View Details →</button>
+    </div>
+  </div>`;
+}
+
+function essRenderLoans(){
+  const filter = (document.getElementById('ess-loan-filter-status')||{value:''}).value;
+  const loans = essGetMyLoans().filter(l => !filter || l.status === filter);
+  const cards = document.getElementById('ess-loans-cards');
+  if(!cards) return;
+
+  const active = essGetMyLoans().filter(l=>l.status==='Active');
+  const paid = essGetMyLoans().filter(l=>l.status==='Fully Paid');
+  const outstanding = active.reduce((s,l)=>s+l.balance,0);
+  const sa=document.getElementById('ess-loan-stat-active'); if(sa) sa.textContent=active.length;
+  const so=document.getElementById('ess-loan-stat-outstanding'); if(so) so.textContent=essLoanPhp(outstanding);
+  const sp=document.getElementById('ess-loan-stat-paid'); if(sp) sp.textContent=paid.length;
+  const sc=document.getElementById('ess-loan-count'); if(sc) sc.textContent=`Showing ${loans.length} loan${loans.length!==1?'s':''}`;
+
+  if(!loans.length){
+    cards.innerHTML=`<div class="card" style="text-align:center;padding:40px;color:#ccc;">No loan records found.</div>`;
+    return;
+  }
+  cards.innerHTML = loans.map(l => essLoanCard(l, 'ess')).join('');
+}
+
+function essViewLoanDetail(id){
+  const l = loansData.find(x=>x.id===id); if(!l) return;
+  document.getElementById('ess-loans-list').classList.add('hidden');
+  document.getElementById('ess-loans-detail').classList.remove('hidden');
+  essPopulateLoanDetail('ess', l);
+}
+
+function essCloseLoanDetail(){
+  document.getElementById('ess-loans-detail').classList.add('hidden');
+  document.getElementById('ess-loans-list').classList.remove('hidden');
+  essRenderLoans();
+}
+
+// --- ae-loans (ESS tab inside Admin view) ---
+function aeRenderLoans(){
+  const filter = (document.getElementById('ae-loan-filter-status')||{value:''}).value;
+  const loans = essGetMyLoans().filter(l => !filter || l.status === filter);
+  const cards = document.getElementById('ae-loans-cards');
+  if(!cards) return;
+
+  const active = essGetMyLoans().filter(l=>l.status==='Active');
+  const paid = essGetMyLoans().filter(l=>l.status==='Fully Paid');
+  const outstanding = active.reduce((s,l)=>s+l.balance,0);
+  const sa=document.getElementById('ae-loan-stat-active'); if(sa) sa.textContent=active.length;
+  const so=document.getElementById('ae-loan-stat-outstanding'); if(so) so.textContent=essLoanPhp(outstanding);
+  const sp=document.getElementById('ae-loan-stat-paid'); if(sp) sp.textContent=paid.length;
+  const sc=document.getElementById('ae-loan-count'); if(sc) sc.textContent=`Showing ${loans.length} loan${loans.length!==1?'s':''}`;
+
+  if(!loans.length){
+    cards.innerHTML=`<div class="card" style="text-align:center;padding:40px;color:#ccc;">No loan records found.</div>`;
+    return;
+  }
+  cards.innerHTML = loans.map(l => essLoanCard(l, 'ae')).join('');
+}
+
+function aeViewLoanDetail(id){
+  const l = loansData.find(x=>x.id===id); if(!l) return;
+  document.getElementById('ae-loans-list').classList.add('hidden');
+  document.getElementById('ae-loans-detail').classList.remove('hidden');
+  essPopulateLoanDetail('ae', l);
+}
+
+function aeCloseLoanDetail(){
+  document.getElementById('ae-loans-detail').classList.add('hidden');
+  document.getElementById('ae-loans-list').classList.remove('hidden');
+  aeRenderLoans();
+}
+
+// --- Shared detail populator ---
+function essPopulateLoanDetail(prefix, l){
+  const dedDisplay = l.method==='Fixed' ? essLoanPhp(l.dedVal) : `${l.dedVal}% (${essLoanPhp(Math.round(l.dedVal/100*l.amount))} / cutoff)`;
+  document.getElementById(`${prefix}-ld-type`).textContent = l.type;
+  document.getElementById(`${prefix}-ld-amount`).textContent = essLoanPhp(l.amount);
+  document.getElementById(`${prefix}-ld-balance`).textContent = essLoanPhp(l.balance);
+  document.getElementById(`${prefix}-ld-deduction`).textContent = dedDisplay;
+  document.getElementById(`${prefix}-ld-start`).textContent = l.startDate;
+  document.getElementById(`${prefix}-ld-end`).textContent = l.endDate||'—';
+  document.getElementById(`${prefix}-ld-remarks`).textContent = l.remarks||'—';
+
+  const badge = document.getElementById(`${prefix}-ld-badge`);
+  badge.className = 'pill ' + (l.status==='Active'?'pg':'pb');
+  badge.textContent = l.status;
+
+  const paid = l.amount - l.balance;
+  const pct = l.amount>0 ? Math.round(paid/l.amount*100) : 100;
+  document.getElementById(`${prefix}-ld-pct`).textContent = pct+'%';
+  document.getElementById(`${prefix}-ld-bar`).style.width = pct+'%';
+  document.getElementById(`${prefix}-ld-paid`).textContent = essLoanPhp(paid);
+  document.getElementById(`${prefix}-ld-remaining`).textContent = essLoanPhp(l.balance);
+
+  let estComp = '—';
+  if(l.status==='Fully Paid'){ estComp='Completed'; }
+  else if(l.balance>0){
+    const dedPerCutoff = l.method==='Fixed'?l.dedVal:Math.round(l.dedVal/100*l.amount);
+    const monthsLeft = Math.ceil(Math.ceil(l.balance/dedPerCutoff)/2);
+    estComp = `~${monthsLeft} month${monthsLeft!==1?'s':''}`;
+  }
+  document.getElementById(`${prefix}-ld-est`).textContent = estComp;
+
+  const tbody = document.getElementById(`${prefix}-ld-history`);
+  tbody.innerHTML = [...l.history].reverse().map(h=>`
+    <tr>
+      <td style="color:#999;">${h.date}</td>
+      <td style="font-weight:600;">${essLoanPhp(h.amount)}</td>
+      <td style="color:#c62828;">${essLoanPhp(h.balanceAfter)}</td>
+      <td><span class="pill ${h.source==='Payroll Auto'?'pb':'pa'}" style="font-size:10px;">${h.source}</span></td>
+      <td style="color:#bbb;">${h.remarks||'—'}</td>
+    </tr>`).join('');
+  if(!l.history.length) tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:#ccc;">No payment history yet.</td></tr>`;
+}
+</script>
 </body>
 </html>
